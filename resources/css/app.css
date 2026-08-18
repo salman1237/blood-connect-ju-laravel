@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Design tokens ported from the approved reference design
+ * (github.com/salman1237/blood-connect-ju, src/styles.css).
+ * Stored as bare "L C H" triplets so Tailwind's oklch(var(--x) / <alpha-value>)
+ * wiring in tailwind.config.js can apply opacity modifiers (e.g. bg-warning/20).
+ */
+:root {
+    --radius: 0.75rem;
+
+    --background: 0.985 0.004 80;
+    --foreground: 0.235 0.012 45;
+    --surface: 0.965 0.006 75;
+    --card: 1 0 0;
+    --card-foreground: 0.235 0.012 45;
+    --popover: 1 0 0;
+    --popover-foreground: 0.235 0.012 45;
+    --primary: 0.55 0.19 26;
+    --primary-foreground: 0.99 0.005 80;
+    --secondary: 0.95 0.008 60;
+    --secondary-foreground: 0.3 0.015 45;
+    --muted: 0.955 0.006 70;
+    --muted-foreground: 0.53 0.014 55;
+    --accent: 0.94 0.02 25;
+    --accent-foreground: 0.42 0.16 26;
+    --destructive: 0.55 0.19 26;
+    --destructive-foreground: 0.99 0.005 80;
+    --success: 0.62 0.11 155;
+    --success-foreground: 0.99 0.005 80;
+    --warning: 0.75 0.13 75;
+    --warning-foreground: 0.28 0.05 60;
+    --info: 0.58 0.09 240;
+    --info-foreground: 0.99 0.005 80;
+    --border: 0.9 0.008 65;
+    --input: 0.9 0.008 65;
+    --ring: 0.55 0.19 26;
+
+    --sidebar: 0.99 0.004 80;
+    --sidebar-foreground: 0.3 0.012 45;
+    --sidebar-primary: 0.55 0.19 26;
+    --sidebar-primary-foreground: 0.99 0.005 80;
+    --sidebar-accent: 0.95 0.015 30;
+    --sidebar-accent-foreground: 0.42 0.16 26;
+    --sidebar-border: 0.91 0.008 65;
+    --sidebar-ring: 0.55 0.19 26;
+
+    --shadow-card: 0 1px 2px oklch(0.2 0.03 20 / 6%), 0 8px 24px -16px oklch(0.2 0.03 20 / 18%);
+    --shadow-lift: 0 12px 40px -20px oklch(0.25 0.12 25 / 35%);
+}
+
+@layer base {
+    body {
+        @apply bg-background text-foreground antialiased;
+        font-family: 'Public Sans', theme('fontFamily.sans');
+    }
+
+    h1,
+    h2,
+    h3 {
+        letter-spacing: -0.02em;
+    }
+}
+
+@layer components {
+    .surface-panel {
+        @apply rounded-xl border border-border bg-card shadow-card;
+    }
+}
