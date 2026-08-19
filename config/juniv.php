@@ -49,6 +49,12 @@ return [
         'Faculty of Law' => [
             'Law and Justice',
         ],
+        'Institutes' => [
+            'Institute of Business Administration',
+            'Institute of Information Technology',
+            'Institute of Comparative Literature and Culture',
+            'Institute of Remote Sensing and GIS',
+        ],
     ],
 
     'halls' => [

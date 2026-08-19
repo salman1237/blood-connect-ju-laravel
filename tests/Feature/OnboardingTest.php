@@ -84,6 +84,22 @@ class OnboardingTest extends TestCase
         ]);
     }
 
+    public function test_accepts_an_institute_as_a_department(): void
+    {
+        // Departments live under faculties, but JU's institutes (IBA, IIT, etc.)
+        // are a separate top-level category — both must be valid choices here.
+        $user = User::factory()->create(['role' => 'student']);
+
+        $response = $this->actingAs($user)->post('/onboarding', [
+            'blood_group' => 'O-',
+            'hall' => 'Rokeya Hall',
+            'department' => 'Institute of Business Administration',
+            'is_available' => '1',
+        ]);
+
+        $response->assertSessionDoesntHaveErrors('department');
+    }
+
     public function test_rejects_a_hall_or_department_not_in_the_official_list(): void
     {
         $user = User::factory()->create(['role' => 'student']);
