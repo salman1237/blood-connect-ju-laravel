@@ -1,0 +1,77 @@
+<?php
+
+// Source: https://juniv.edu (official site), pulled 2026-08-19.
+return [
+    'departments' => [
+        'Faculty of Arts & Humanities' => [
+            'International Relations',
+            'English',
+            'History',
+            'Philosophy',
+            'Drama and Dramatics',
+            'Archaeology',
+            'Bangla',
+            'Journalism and Media Studies',
+            'Fine Art',
+        ],
+        'Faculty of Mathematical & Physical Sciences' => [
+            'Computer Science and Engineering',
+            'Mathematics',
+            'Physics',
+            'Environmental Sciences',
+            'Statistics and Data Science',
+            'Geological Sciences',
+            'Chemistry',
+        ],
+        'Faculty of Social Sciences' => [
+            'Economics',
+            'Urban and Regional Planning',
+            'Anthropology',
+            'Geography and Environment',
+            'Government and Politics',
+            'Public Administration',
+        ],
+        'Faculty of Biological Sciences' => [
+            'Botany',
+            'Biochemistry and Molecular Biology',
+            'Zoology',
+            'Pharmacy',
+            'Microbiology',
+            'Biotechnology and Genetic Engineering',
+            'Public Health and Informatics',
+        ],
+        'Faculty of Business Studies' => [
+            'Finance and Banking',
+            'Marketing',
+            'Accounting and Information Systems',
+            'Management Studies',
+        ],
+        'Faculty of Law' => [
+            'Law and Justice',
+        ],
+    ],
+
+    'halls' => [
+        'Al Beruni Hall',
+        'A F M Kamaluddin Hall',
+        'Jahanara Imam Hall',
+        'Nawab Faizunnesa Hall',
+        'Pritilata Hall',
+        'Sher-e-Bangla A. K. Fazlul Haq Hall',
+        'Begum Khaleda Zia Hall',
+        'Maulana Bhashani Hall',
+        'Mir Mosharraf Hossain Hall',
+        'Shaheed Salam-Barkat Hall',
+        'Shaheed Rafiq-Jabbar Hall',
+        'July 24 Jagoroni Hall',
+        'Shaheed Felani Khatun Hall',
+        'Bishwakabi Rabindranath Tagore Hall',
+        'Begum Sufia Kamal Hall',
+        'Rokeya Hall',
+        'Fazilatunnesa Hall',
+        'Bir Protik Taramon Bibi Hall',
+        'Shaheed Tajuddin Ahmad Hall',
+        'Nawab Salimullah Hall',
+        'Jatiya Kabi Kazi Nazrul Islam Hall',
+    ],
+];

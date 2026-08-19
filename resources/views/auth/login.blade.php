@@ -1,47 +1,51 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <x-slot name="title">Login — Blood Connect JU</x-slot>
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+    <x-auth-card
+        title="Welcome back"
+        subtitle="Log in to see active requests near your hall."
+    >
+        <x-slot name="footer">
+            New here?
+            <a href="{{ route('register') }}" class="font-medium text-primary underline">Create an account</a>
+        </x-slot>
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <x-auth-session-status :status="session('status')" />
+
+        <x-google-button />
+
+        <div class="flex items-center gap-3 text-xs text-muted-foreground">
+            <span class="h-px flex-1 bg-border"></span>
+            or
+            <span class="h-px flex-1 bg-border"></span>
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+        <form method="POST" action="{{ route('login') }}" class="space-y-4">
+            @csrf
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
+            <div class="space-y-1.5">
+                <x-input-label for="email" value="Email" />
+                <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+                <x-input-error :messages="$errors->get('email')" />
+            </div>
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+            <div class="space-y-1.5">
+                <x-input-label for="password" value="Password" />
+                <x-text-input id="password" type="password" name="password" required autocomplete="current-password" />
+                <x-input-error :messages="$errors->get('password')" />
+            </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
+            <div class="flex items-center justify-between text-sm">
+                <label class="flex items-center gap-2 text-muted-foreground">
+                    <input type="checkbox" name="remember" class="rounded border-border text-primary focus:ring-primary">
+                    Keep me signed in
+                </label>
+                @if (Route::has('password.request'))
+                    <a href="{{ route('password.request') }}" class="font-medium text-primary hover:underline">Forgot password?</a>
+                @endif
+            </div>
 
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
+            <x-button type="submit" size="lg" class="w-full">Login</x-button>
+        </form>
+    </x-auth-card>
 </x-guest-layout>
