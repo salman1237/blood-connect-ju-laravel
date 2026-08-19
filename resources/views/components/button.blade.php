@@ -12,6 +12,7 @@
         'primary' => 'bg-primary text-primary-foreground hover:opacity-90',
         'outline' => 'border border-border bg-card text-foreground hover:bg-secondary',
         'ghost' => 'text-foreground hover:bg-secondary',
+        'danger' => 'border border-destructive text-destructive hover:bg-destructive/10',
     ];
 
     $sizes = [

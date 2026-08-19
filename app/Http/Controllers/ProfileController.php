@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Requests\UpdateDonorProfileRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +19,9 @@ class ProfileController extends Controller
     {
         return view('profile.edit', [
             'user' => $request->user(),
+            'halls' => config('juniv.halls'),
+            'departments' => config('juniv.departments'),
+            'bloodGroups' => ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
         ]);
     }
 
@@ -35,6 +39,18 @@ class ProfileController extends Controller
         $request->user()->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    /**
+     * Update the user's donor-specific info (blood group, hall/department,
+     * phone, availability) — the same fields onboarding collects, editable
+     * afterward here.
+     */
+    public function updateDonorProfile(UpdateDonorProfileRequest $request): RedirectResponse
+    {
+        $request->user()->updateDonorProfile($request->validated());
+
+        return Redirect::route('profile.edit')->with('status', 'donor-profile-updated');
     }
 
     /**

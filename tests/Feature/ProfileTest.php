@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\DonorProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -19,6 +20,52 @@ class ProfileTest extends TestCase
             ->get('/profile');
 
         $response->assertOk();
+    }
+
+    public function test_profile_page_is_displayed_even_with_no_donor_profile_yet(): void
+    {
+        // /profile is deliberately reachable before onboarding is complete.
+        $user = User::factory()->create(['role' => 'student', 'hall' => null, 'department' => null]);
+
+        $response = $this->actingAs($user)->get('/profile');
+
+        $response->assertOk();
+    }
+
+    public function test_donor_profile_can_be_updated(): void
+    {
+        $user = User::factory()->create(['role' => 'staff']);
+        DonorProfile::factory()->for($user)->create(['blood_group' => 'O-']);
+
+        $response = $this->actingAs($user)->patch('/profile/donor', [
+            'blood_group' => 'AB+',
+            'department' => 'Physics',
+            'phone' => '01711111111',
+            'is_available' => '0',
+        ]);
+
+        $response->assertSessionHasNoErrors()->assertRedirect('/profile');
+
+        $user->refresh();
+        $this->assertSame('AB+', $user->donorProfile->blood_group);
+        $this->assertSame('Physics', $user->department);
+        $this->assertFalse($user->donorProfile->is_available);
+    }
+
+    public function test_unchecking_availability_actually_turns_it_off(): void
+    {
+        // Regression: unchecked checkboxes don't submit at all, so without
+        // the hidden-input pairing this would silently stay "available".
+        $user = User::factory()->create(['role' => 'staff']);
+        DonorProfile::factory()->for($user)->create(['is_available' => true]);
+
+        $this->actingAs($user)->patch('/profile/donor', [
+            'blood_group' => 'O-',
+            'department' => 'Physics',
+            'is_available' => '0',
+        ]);
+
+        $this->assertFalse($user->donorProfile->fresh()->is_available);
     }
 
     public function test_profile_information_can_be_updated(): void

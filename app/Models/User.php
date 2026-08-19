@@ -77,4 +77,27 @@ class User extends Authenticatable implements MustVerifyEmail
             && $this->department !== null
             && $this->donorProfile !== null;
     }
+
+    /**
+     * Shared by onboarding (first-time setup) and the profile page (editing
+     * afterward) — validated data from UpdateDonorProfileRequest in, both the
+     * user's own fields and their donor_profiles row updated together.
+     */
+    public function updateDonorProfile(array $validated): void
+    {
+        $this->update([
+            'department' => $validated['department'],
+            'hall' => $validated['hall'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+        ]);
+
+        $this->donorProfile()->updateOrCreate(
+            ['user_id' => $this->id],
+            [
+                'blood_group' => $validated['blood_group'],
+                'is_available' => (bool) ($validated['is_available'] ?? true),
+                'last_donation_date' => $validated['last_donation_date'] ?? null,
+            ]
+        );
+    }
 }

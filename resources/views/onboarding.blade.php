@@ -87,6 +87,7 @@
                             <p class="text-sm font-medium">Available to donate</p>
                             <p class="text-xs text-muted-foreground">Show me in donor search results</p>
                         </div>
+                        <input type="hidden" name="is_available" value="0">
                         <input type="checkbox" name="is_available" value="1" checked class="size-5 rounded border-border text-primary focus:ring-primary">
                     </label>
 
