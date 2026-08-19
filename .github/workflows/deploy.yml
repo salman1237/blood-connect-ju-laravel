@@ -31,7 +31,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
-            cd ${{ secrets.DEPLOY_PATH }}
+            cd "${{ secrets.DEPLOY_PATH }}"
             git fetch origin main
             git reset --hard origin/main
             /opt/cpanel/ea-php82/root/usr/bin/php /usr/local/bin/composer.phar install --no-dev --optimize-autoloader --no-interaction
