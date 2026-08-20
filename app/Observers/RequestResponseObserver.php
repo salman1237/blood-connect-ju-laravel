@@ -5,22 +5,31 @@ namespace App\Observers;
 use App\Models\DonationHistory;
 use App\Models\DonorProfile;
 use App\Models\RequestResponse;
+use App\Notifications\DonationConfirmationPending;
 use App\Notifications\DonationConfirmed;
 
 class RequestResponseObserver
 {
     /**
-     * The moment BOTH sides have confirmed a donation happened, log it and
-     * bump the donor's trust score. Only the update that completes the pair
-     * has both timestamps set and one of them freshly changed, so this
-     * fires exactly once per response — no separate idempotency guard needed.
+     * Either confirmation timestamp changing means one side just acted.
+     * Once both are set, log the donation and bump trust score — this only
+     * runs on the update that completes the pair, so it fires exactly once
+     * per response with no separate idempotency guard needed. Until then,
+     * nudge whichever side hasn't confirmed yet, so the pair doesn't stall
+     * on someone forgetting to close the loop.
      */
     public function updated(RequestResponse $response): void
     {
-        $justCompletedPair = ($response->wasChanged('requester_confirmed_at') || $response->wasChanged('donor_confirmed_at'))
-            && $response->isMutuallyConfirmed();
+        $justConfirmedOneSide = $response->wasChanged('requester_confirmed_at') || $response->wasChanged('donor_confirmed_at');
 
-        if (! $justCompletedPair) {
+        if (! $justConfirmedOneSide) {
+            return;
+        }
+
+        if (! $response->isMutuallyConfirmed()) {
+            $stillWaitingOn = $response->wasChanged('requester_confirmed_at') ? $response->donor : $response->bloodRequest->requester;
+            $stillWaitingOn->notify(new DonationConfirmationPending($response));
+
             return;
         }
 

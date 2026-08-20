@@ -6,6 +6,7 @@ use App\Models\BloodRequest;
 use App\Models\DonorProfile;
 use App\Models\RequestResponse;
 use App\Models\User;
+use App\Notifications\DonationConfirmationPending;
 use App\Notifications\DonationConfirmed;
 use App\Notifications\DonorSelected;
 use App\Notifications\RequestRejected;
@@ -92,5 +93,67 @@ class NotificationTriggersTest extends TestCase
 
         $this->assertSame('Thanks for donating!', $donorMail->subject);
         $this->assertSame('Donation confirmed', $requesterMail->subject);
+    }
+
+    public function test_donor_confirming_first_notifies_the_requester_to_confirm_too(): void
+    {
+        Notification::fake();
+        $requester = $this->onboardedUser();
+        $donor = $this->onboardedUser();
+        $bloodRequest = BloodRequest::factory()->for($requester, 'requester')->fulfilled()->create();
+        $response = RequestResponse::factory()->confirmed()->for($bloodRequest, 'bloodRequest')->for($donor, 'donor')->create();
+
+        $this->actingAs($donor)->patch(route('requests.responses.confirm-donation', [$bloodRequest, $response]));
+
+        Notification::assertSentTo($requester, DonationConfirmationPending::class);
+        Notification::assertNotSentTo($donor, DonationConfirmationPending::class);
+        Notification::assertNotSentTo($requester, DonationConfirmed::class);
+    }
+
+    public function test_requester_confirming_first_notifies_the_donor_to_confirm_too(): void
+    {
+        Notification::fake();
+        $requester = $this->onboardedUser();
+        $donor = $this->onboardedUser();
+        $bloodRequest = BloodRequest::factory()->for($requester, 'requester')->fulfilled()->create();
+        $response = RequestResponse::factory()->confirmed()->for($bloodRequest, 'bloodRequest')->for($donor, 'donor')->create();
+
+        $this->actingAs($requester)->patch(route('requests.responses.confirm-donation', [$bloodRequest, $response]));
+
+        Notification::assertSentTo($donor, DonationConfirmationPending::class);
+        Notification::assertNotSentTo($requester, DonationConfirmationPending::class);
+        Notification::assertNotSentTo($donor, DonationConfirmed::class);
+    }
+
+    public function test_confirmation_pending_notification_is_not_sent_again_once_mutually_confirmed(): void
+    {
+        Notification::fake();
+        $requester = $this->onboardedUser();
+        $donor = $this->onboardedUser();
+        $bloodRequest = BloodRequest::factory()->for($requester, 'requester')->fulfilled()->create();
+        $response = RequestResponse::factory()->confirmed()->for($bloodRequest, 'bloodRequest')->for($donor, 'donor')->create();
+
+        $this->actingAs($donor)->patch(route('requests.responses.confirm-donation', [$bloodRequest, $response]));
+        $this->actingAs($requester)->patch(route('requests.responses.confirm-donation', [$bloodRequest, $response]));
+
+        Notification::assertSentToTimes($requester, DonationConfirmationPending::class, 1);
+        Notification::assertSentToTimes($donor, DonationConfirmationPending::class, 0);
+        Notification::assertSentTo($donor, DonationConfirmed::class);
+        Notification::assertSentTo($requester, DonationConfirmed::class);
+    }
+
+    public function test_donation_confirmation_pending_mail_content_differs_for_donor_vs_requester(): void
+    {
+        $requester = $this->onboardedUser();
+        $donor = $this->onboardedUser();
+        $bloodRequest = BloodRequest::factory()->for($requester, 'requester')->fulfilled()->create();
+        $response = RequestResponse::factory()->confirmed()->for($bloodRequest, 'bloodRequest')->for($donor, 'donor')->create();
+        $notification = new DonationConfirmationPending($response);
+
+        $donorMail = $notification->toMail($donor);
+        $requesterMail = $notification->toMail($requester);
+
+        $this->assertSame('Please confirm your donation', $donorMail->subject);
+        $this->assertSame('Please confirm the donation', $requesterMail->subject);
     }
 }

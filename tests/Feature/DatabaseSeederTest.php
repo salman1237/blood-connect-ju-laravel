@@ -60,4 +60,26 @@ class DatabaseSeederTest extends TestCase
             );
         }
     }
+
+    /**
+     * Regression: User::create() silently drops email_verified_at because
+     * it's deliberately excluded from $fillable — the seeder set it in every
+     * array literal, but without forceCreate() none of it actually landed
+     * in the database, and every seeded account got stuck at /verify-email
+     * on a real login despite looking correct in the seeder's own source.
+     */
+    public function test_every_seeded_user_can_pass_the_verified_middleware(): void
+    {
+        $this->seed();
+
+        $users = User::all();
+        $this->assertGreaterThan(0, $users->count());
+
+        foreach ($users as $user) {
+            $this->assertTrue(
+                $user->hasVerifiedEmail(),
+                "{$user->email} was seeded but has no email_verified_at — real login would bounce to /verify-email."
+            );
+        }
+    }
 }

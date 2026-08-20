@@ -26,7 +26,11 @@ class DatabaseSeeder extends Seeder
     {
         $password = Hash::make('password');
 
-        $admin = User::create([
+        // forceCreate (not create) throughout this seeder because
+        // email_verified_at is deliberately excluded from $fillable — a
+        // plain create() here would silently drop it, leaving seeded
+        // accounts unable to pass the 'verified' middleware on a real login.
+        $admin = User::forceCreate([
             'name' => 'Admin User', 'email' => 'admin@juniv.edu', 'password' => $password,
             'role' => 'admin', 'department' => 'Computer Science and Engineering', 'gender' => 'male',
             'email_verified_at' => now(), 'is_active' => true, 'email_notifications_enabled' => true,
@@ -35,7 +39,7 @@ class DatabaseSeeder extends Seeder
         $verifiers = collect([
             ['name' => 'Farhana Islam', 'email' => 'farhana.verifier@juniv.edu', 'department' => 'Physics', 'gender' => 'female'],
             ['name' => 'Kamrul Hasan', 'email' => 'kamrul.verifier@juniv.edu', 'department' => 'Economics', 'gender' => 'male'],
-        ])->map(fn ($data) => User::create([
+        ])->map(fn ($data) => User::forceCreate([
             ...$data, 'password' => $password, 'role' => 'verifier',
             'email_verified_at' => now(), 'is_active' => true, 'email_notifications_enabled' => true,
         ]));
@@ -59,7 +63,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Shamima Nasrin', 'email' => 'shamima.nasrin@juniv.edu', 'role' => 'student', 'gender' => 'female', 'hall' => 'Jahanara Imam Hall', 'department' => 'Geography and Environment', 'batch' => '2015-16', 'blood_group' => 'A-', 'available' => false],
             ['name' => 'Omar Faruk', 'email' => 'omar.faruk@juniv.edu', 'role' => 'student', 'gender' => 'male', 'hall' => 'Shaheed Salam-Barkat Hall', 'department' => 'Chemistry', 'batch' => '2022-23', 'blood_group' => 'B-', 'available' => false],
         ])->map(function ($data) use ($password) {
-            $user = User::create([
+            $user = User::forceCreate([
                 'name' => $data['name'], 'email' => $data['email'], 'password' => $password,
                 'role' => $data['role'], 'gender' => $data['gender'], 'hall' => $data['hall'] ?? null,
                 'department' => $data['department'] ?? null, 'batch' => $data['batch'] ?? null,
