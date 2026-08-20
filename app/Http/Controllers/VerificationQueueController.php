@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\BloodRequest;
+use App\Notifications\RequestRejected;
+use App\Notifications\RequestVerified;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -29,6 +31,8 @@ class VerificationQueueController extends Controller
             'verified_by' => auth()->id(),
         ]);
 
+        $request->requester->notify(new RequestVerified($request));
+
         return redirect()->route('verify.queue')->with('status', 'request-approved');
     }
 
@@ -41,6 +45,8 @@ class VerificationQueueController extends Controller
             'rejected_at' => now(),
             'rejected_by' => auth()->id(),
         ]);
+
+        $request->requester->notify(new RequestRejected($request));
 
         return redirect()->route('verify.queue')->with('status', 'request-rejected');
     }

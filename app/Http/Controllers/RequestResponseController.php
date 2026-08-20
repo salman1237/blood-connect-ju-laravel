@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BloodRequest;
 use App\Models\RequestResponse;
+use App\Notifications\DonorSelected;
 use App\Notifications\RequestResponded;
 use Illuminate\Http\RedirectResponse;
 
@@ -28,6 +29,8 @@ class RequestResponseController extends Controller
         $this->authorize('confirm', $response);
 
         $response->update(['status' => 'confirmed']);
+
+        $response->donor->notify(new DonorSelected($response));
 
         return redirect()->route('requests.show', $request)->with('status', 'donor-confirmed');
     }

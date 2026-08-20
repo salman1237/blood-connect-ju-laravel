@@ -8,7 +8,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class RequestResponded extends Notification implements ShouldQueue
+/** Sent to the donor when the requester picks them as their confirmed donor. */
+class DonorSelected extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -27,11 +28,12 @@ class RequestResponded extends Notification implements ShouldQueue
         $bloodRequest = $this->response->bloodRequest;
 
         return (new MailMessage)
-            ->subject("{$this->response->donor->name} can donate for your request")
+            ->subject('You\'ve been selected to donate')
             ->greeting("Hi {$notifiable->name},")
-            ->line("{$this->response->donor->name} ({$this->response->donor->donorProfile?->blood_group}) responded to your blood request at {$bloodRequest->hospital_name}.")
-            ->action('View responders', route('requests.show', $bloodRequest))
-            ->line('You can confirm them as your donor from the request page.');
+            ->line("{$bloodRequest->requester->name} selected you to donate {$bloodRequest->blood_group} for their request at {$bloodRequest->hospital_name}.")
+            ->line("Contact method: {$bloodRequest->contact_method}")
+            ->action('View request', route('requests.show', $bloodRequest))
+            ->line('Once the donation happens, come back and confirm it to keep your donor history and trust score up to date.');
     }
 
     /**
@@ -42,11 +44,9 @@ class RequestResponded extends Notification implements ShouldQueue
         $bloodRequest = $this->response->bloodRequest;
 
         return [
-            'type' => 'request_responded',
+            'type' => 'donor_selected',
             'request_id' => $bloodRequest->id,
-            'donor_name' => $this->response->donor->name,
-            'blood_group' => $bloodRequest->blood_group,
-            'message' => "{$this->response->donor->name} can donate {$bloodRequest->blood_group} for your request at {$bloodRequest->hospital_name}.",
+            'message' => "You've been selected to donate {$bloodRequest->blood_group} for the request at {$bloodRequest->hospital_name}.",
         ];
     }
 }

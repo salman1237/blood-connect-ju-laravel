@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\DonationHistory;
 use App\Models\DonorProfile;
 use App\Models\RequestResponse;
+use App\Notifications\DonationConfirmed;
 
 class RequestResponseObserver
 {
@@ -30,5 +31,10 @@ class RequestResponseObserver
         ]);
 
         DonorProfile::where('user_id', $response->donor_id)->increment('trust_score');
+
+        // Fetched fresh (not via an already-loaded relation) so the mail's
+        // trust-score line reflects the increment above, not a stale value.
+        $response->donor->notify(new DonationConfirmed($response));
+        $response->bloodRequest->requester->notify(new DonationConfirmed($response));
     }
 }

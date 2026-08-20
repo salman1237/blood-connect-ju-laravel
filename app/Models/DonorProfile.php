@@ -18,12 +18,16 @@ class DonorProfile extends Model
     /** Rh-negative types — rare in the Bangladeshi population (~3-5%). */
     const RARE_BLOOD_GROUPS = ['A-', 'B-', 'AB-', 'O-'];
 
+    /** Minimum gap between "you're eligible again" reminder emails to the same donor. */
+    const REMINDER_COOLDOWN_DAYS = 30;
+
     protected $fillable = [
         'user_id',
         'blood_group',
         'last_donation_date',
         'is_available',
         'trust_score',
+        'last_reminded_at',
     ];
 
     protected function casts(): array
@@ -31,6 +35,7 @@ class DonorProfile extends Model
         return [
             'last_donation_date' => 'date',
             'is_available' => 'boolean',
+            'last_reminded_at' => 'datetime',
         ];
     }
 
@@ -71,6 +76,18 @@ class DonorProfile extends Model
             $q->whereNull('donor_profiles.last_donation_date')
                 ->orWhere('donor_profiles.last_donation_date', '<', $cutoff);
         });
+    }
+
+    /** Eligible donors who haven't been sent a reminder recently. */
+    public function scopeDueForReminder(Builder $query): Builder
+    {
+        $cooldownCutoff = now()->subDays(self::REMINDER_COOLDOWN_DAYS);
+
+        return $query->eligible()
+            ->where(function (Builder $q) use ($cooldownCutoff) {
+                $q->whereNull('last_reminded_at')
+                    ->orWhere('last_reminded_at', '<', $cooldownCutoff);
+            });
     }
 
     /**

@@ -27,6 +27,7 @@
                 ['route' => 'verify.queue', 'label' => 'Verifier queue', 'icon' => 'shield-check'],
                 ['route' => 'admin.dashboard', 'label' => 'Admin dashboard', 'icon' => 'bar-chart'],
             ];
+            $unreadNotificationsCount = Route::has('notifications.index') ? auth()->user()->unreadNotifications()->count() : 0;
         @endphp
 
         <aside class="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar p-4 lg:flex">
@@ -39,6 +40,9 @@
                            class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors {{ request()->routeIs($item['route']) ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/60' }}">
                             <x-icon :name="$item['icon']" class="size-4" />
                             {{ $item['label'] }}
+                            @if ($item['route'] === 'notifications.index' && $unreadNotificationsCount > 0)
+                                <span class="ml-auto flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">{{ min($unreadNotificationsCount, 9) }}{{ $unreadNotificationsCount > 9 ? '+' : '' }}</span>
+                            @endif
                         </a>
                     @endif
                 @endforeach
@@ -100,8 +104,13 @@
                 @foreach ($primaryNav as $item)
                     @if (Route::has($item['route']))
                         <a href="{{ route($item['route']) }}"
-                           class="flex flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-[10px] font-medium transition-colors {{ request()->routeIs($item['route']) ? 'text-primary' : 'text-muted-foreground' }}">
-                            <x-icon :name="$item['icon']" class="size-5" />
+                           class="relative flex flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-[10px] font-medium transition-colors {{ request()->routeIs($item['route']) ? 'text-primary' : 'text-muted-foreground' }}">
+                            <span class="relative">
+                                <x-icon :name="$item['icon']" class="size-5" />
+                                @if ($item['route'] === 'notifications.index' && $unreadNotificationsCount > 0)
+                                    <span class="absolute -right-1 -top-1 size-2 rounded-full bg-primary"></span>
+                                @endif
+                            </span>
                             {{ $item['label'] }}
                         </a>
                     @endif

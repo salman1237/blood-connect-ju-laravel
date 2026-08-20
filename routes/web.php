@@ -4,6 +4,7 @@ use App\Http\Controllers\BloodRequestController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DonorSearchController;
 use App\Http\Controllers\LeaderboardController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -39,6 +40,10 @@ Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
 
     Route::get('/donors', DonorSearchController::class)->name('donors.index');
     Route::get('/leaderboard', LeaderboardController::class)->name('leaderboard');
+
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 });
 
 // Verifier — CR / hall provost office / medical center staff. Not gated by
