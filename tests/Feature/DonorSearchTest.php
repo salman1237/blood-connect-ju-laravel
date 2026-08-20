@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\DonationHistory;
 use App\Models\DonorProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -62,5 +63,53 @@ class DonorSearchTest extends TestCase
         $donors = $response->viewData('donors');
         $this->assertTrue($donors->pluck('user_id')->contains($inHall->id));
         $this->assertFalse($donors->pluck('user_id')->contains($elsewhere->id));
+    }
+
+    public function test_donors_page_searches_by_name(): void
+    {
+        $viewer = $this->onboardedUser();
+        $match = User::factory()->create(['name' => 'Rahim Uddin', 'role' => 'staff']);
+        DonorProfile::factory()->for($match)->create();
+        $other = User::factory()->create(['name' => 'Karim Ahmed', 'role' => 'staff']);
+        DonorProfile::factory()->for($other)->create();
+
+        $response = $this->actingAs($viewer)->get('/donors?search=Rahim');
+
+        $donors = $response->viewData('donors');
+        $this->assertTrue($donors->pluck('user_id')->contains($match->id));
+        $this->assertFalse($donors->pluck('user_id')->contains($other->id));
+    }
+
+    public function test_clicking_a_donor_shows_their_profile(): void
+    {
+        $viewer = $this->onboardedUser();
+        $donor = $this->onboardedUser(['name' => 'Rahim Uddin']);
+
+        $response = $this->actingAs($viewer)->get(route('donors.show', $donor));
+
+        $response->assertOk();
+        $response->assertSee('Rahim Uddin');
+    }
+
+    public function test_donor_profile_shows_donation_history(): void
+    {
+        $viewer = $this->onboardedUser();
+        $donor = $this->onboardedUser();
+        DonationHistory::factory()->for($donor, 'donor')->create();
+
+        $response = $this->actingAs($viewer)->get(route('donors.show', $donor));
+
+        $response->assertOk();
+        $this->assertCount(1, $response->viewData('donationHistory'));
+    }
+
+    public function test_viewing_a_user_without_a_donor_profile_404s(): void
+    {
+        $viewer = $this->onboardedUser();
+        $notADonor = User::factory()->create(['role' => 'staff']);
+
+        $response = $this->actingAs($viewer)->get(route('donors.show', $notADonor));
+
+        $response->assertNotFound();
     }
 }

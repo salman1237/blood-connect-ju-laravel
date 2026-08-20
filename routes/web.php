@@ -49,6 +49,7 @@ Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
     Route::patch('/requests/{request}/responses/{response}/confirm-donation', [RequestResponseController::class, 'confirmDonation'])->name('requests.responses.confirm-donation');
 
     Route::get('/donors', DonorSearchController::class)->name('donors.index');
+    Route::get('/donors/{donor}', [DonorSearchController::class, 'show'])->name('donors.show');
     Route::get('/leaderboard', LeaderboardController::class)->name('leaderboard');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
