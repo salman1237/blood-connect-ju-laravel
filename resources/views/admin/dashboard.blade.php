@@ -10,7 +10,7 @@
         <x-button :href="route('verify.queue')" variant="outline" size="sm">Verifier queue</x-button>
     </div>
 
-    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <div class="surface-panel p-4">
             <p class="text-xs text-muted-foreground">Fulfilled requests</p>
             <p class="mt-1 text-2xl font-semibold text-success">{{ $fulfilledCount }}</p>

@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'donor_badge' => 'registered campus donors',
+    'headline' => 'When someone on campus needs blood, minutes matter.',
+    'subtext' => 'Blood Connect JU is a coordination platform for Jahangirnagar University students, faculty and staff. Post a verified emergency request, find eligible donors by blood group and hall, and track every request to fulfilment.',
+    'cta_signup' => 'Sign up as a donor',
+    'cta_login' => 'Login',
+    'stat_fulfilled' => 'Requests fulfilled',
+    'stat_response' => 'Avg. response time',
+    'stat_halls' => 'Halls & depts',
+    'live_requests_title' => 'Live requests right now',
+    'live_requests_subtitle' => 'Updated a moment ago',
+    'live' => 'Live',
+    'units_needed' => ':count units needed',
+    'see_all' => 'See all active requests',
+    'feature_1_title' => 'Verified requests only',
+    'feature_1_desc' => 'Student volunteers verify hospital details before a request is broadcast campus-wide.',
+    'feature_2_title' => 'Matched by group & hall',
+    'feature_2_desc' => 'Donors get alerts only for compatible blood groups near their hall or department.',
+    'feature_3_title' => 'Eligibility built in',
+    'feature_3_desc' => 'The platform tracks the 120-day gap so nobody is asked to donate too early.',
+    'ready_title' => "Ready to be someone's lifeline?",
+    'ready_subtitle' => 'Register with your university email. It takes under two minutes.',
+    'ready_cta' => 'Create your donor profile',
+    'footer' => 'Blood Connect JU · A student-run initiative · Savar, Dhaka',
+];

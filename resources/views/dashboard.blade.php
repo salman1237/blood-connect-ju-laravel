@@ -30,24 +30,24 @@
     <div class="mb-4 space-y-3">
         <div class="flex gap-1.5 overflow-x-auto pb-1">
             <a href="{{ route('dashboard', ['hall' => $selectedHall]) }}"
-               class="shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors {{ $selectedBloodGroup === '' ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground' }}">
+               class="shrink-0 rounded-full border px-3 py-2 text-xs font-medium transition-colors {{ $selectedBloodGroup === '' ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground' }}">
                 All
             </a>
             @foreach ($bloodGroups as $group)
                 <a href="{{ route('dashboard', ['blood_group' => $group, 'hall' => $selectedHall]) }}"
-                   class="shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors {{ $selectedBloodGroup === $group ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground' }}">
+                   class="shrink-0 rounded-full border px-3 py-2 text-xs font-medium transition-colors {{ $selectedBloodGroup === $group ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground' }}">
                     {{ $group }}
                 </a>
             @endforeach
         </div>
         <div class="flex gap-1.5 overflow-x-auto pb-1">
             <a href="{{ route('dashboard', ['blood_group' => $selectedBloodGroup]) }}"
-               class="shrink-0 rounded-full border px-3 py-1.5 text-xs transition-colors {{ $selectedHall === '' ? 'border-foreground bg-secondary font-medium' : 'border-border bg-card text-muted-foreground' }}">
+               class="shrink-0 rounded-full border px-3 py-2 text-xs transition-colors {{ $selectedHall === '' ? 'border-foreground bg-secondary font-medium' : 'border-border bg-card text-muted-foreground' }}">
                 All halls
             </a>
             @foreach ($halls as $hall)
                 <a href="{{ route('dashboard', ['blood_group' => $selectedBloodGroup, 'hall' => $hall]) }}"
-                   class="shrink-0 rounded-full border px-3 py-1.5 text-xs transition-colors {{ $selectedHall === $hall ? 'border-foreground bg-secondary font-medium' : 'border-border bg-card text-muted-foreground' }}">
+                   class="shrink-0 rounded-full border px-3 py-2 text-xs transition-colors {{ $selectedHall === $hall ? 'border-foreground bg-secondary font-medium' : 'border-border bg-card text-muted-foreground' }}">
                     {{ $hall }}
                 </a>
             @endforeach

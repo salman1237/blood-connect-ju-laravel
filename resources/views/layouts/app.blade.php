@@ -16,16 +16,16 @@
     <body class="min-h-screen bg-background font-sans text-foreground antialiased">
         @php
             $primaryNav = [
-                ['route' => 'dashboard', 'label' => 'Home', 'icon' => 'home'],
-                ['route' => 'donors.index', 'label' => 'Donors', 'icon' => 'search'],
-                ['route' => 'notifications.index', 'label' => 'Alerts', 'icon' => 'bell'],
-                ['route' => 'leaderboard', 'label' => 'Ranks', 'icon' => 'trophy'],
-                ['route' => 'profile.edit', 'label' => 'Profile', 'icon' => 'user'],
+                ['route' => 'dashboard', 'label' => __('nav.home'), 'icon' => 'home'],
+                ['route' => 'donors.index', 'label' => __('nav.donors'), 'icon' => 'search'],
+                ['route' => 'notifications.index', 'label' => __('nav.alerts'), 'icon' => 'bell'],
+                ['route' => 'leaderboard', 'label' => __('nav.ranks'), 'icon' => 'trophy'],
+                ['route' => 'profile.edit', 'label' => __('nav.profile'), 'icon' => 'user'],
             ];
             $secondaryNav = [
-                ['route' => 'settings.edit', 'label' => 'Settings', 'icon' => 'settings'],
-                ['route' => 'verify.queue', 'label' => 'Verifier queue', 'icon' => 'shield-check'],
-                ['route' => 'admin.dashboard', 'label' => 'Admin dashboard', 'icon' => 'bar-chart'],
+                ['route' => 'settings.edit', 'label' => __('nav.settings'), 'icon' => 'settings'],
+                ['route' => 'verify.queue', 'label' => __('nav.verifier_queue'), 'icon' => 'shield-check'],
+                ['route' => 'admin.dashboard', 'label' => __('nav.admin_dashboard'), 'icon' => 'bar-chart'],
             ];
             $unreadNotificationsCount = Route::has('notifications.index') ? auth()->user()->unreadNotifications()->count() : 0;
         @endphp
@@ -63,13 +63,13 @@
                     @if (Route::has('requests.create'))
                         <a href="{{ route('requests.create') }}"
                            class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90">
-                            <x-icon name="plus" class="size-4" /> Post request
+                            <x-icon name="plus" class="size-4" /> {{ __('nav.post_request') }}
                         </a>
                     @endif
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="block w-full rounded-lg px-3 py-2 text-left text-xs text-muted-foreground hover:bg-sidebar-accent">
-                            Sign out
+                            {{ __('nav.sign_out') }}
                         </button>
                     </form>
                 </div>

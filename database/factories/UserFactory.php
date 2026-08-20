@@ -35,6 +35,7 @@ class UserFactory extends Factory
             // actingAs() in tests would otherwise see a null in-memory
             // attribute even though the real row defaults to active.
             'is_active' => true,
+            'email_notifications_enabled' => true,
         ];
     }
 

@@ -21,7 +21,7 @@
                     <x-input-label value="Urgency" />
                     <div class="grid grid-cols-3 gap-2">
                         @foreach (['critical' => 'Critical', 'within_24h' => 'Within 24h', 'planned' => 'Planned'] as $value => $label)
-                            <label class="flex cursor-pointer items-center justify-center rounded-lg border border-border px-2 py-2.5 text-sm has-[:checked]:border-primary has-[:checked]:bg-accent has-[:checked]:font-medium has-[:checked]:text-accent-foreground">
+                            <label class="flex cursor-pointer items-center justify-center rounded-lg border border-border px-2 py-3 text-sm has-[:checked]:border-primary has-[:checked]:bg-accent has-[:checked]:font-medium has-[:checked]:text-accent-foreground">
                                 <input type="radio" name="urgency" value="{{ $value }}" class="sr-only" {{ old('urgency', 'critical') === $value ? 'checked' : '' }} required>
                                 {{ $label }}
                             </label>
@@ -30,7 +30,7 @@
                     <x-input-error :messages="$errors->get('urgency')" />
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div class="space-y-1.5">
                         <x-input-label for="units_needed" value="Units needed" />
                         <x-text-input id="units_needed" type="number" name="units_needed" min="1" max="20" :value="old('units_needed', 1)" required />

@@ -27,6 +27,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'role',
         'is_active',
+        'locale',
+        'email_notifications_enabled',
         'hall',
         'department',
         'phone',
@@ -54,6 +56,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'email_notifications_enabled' => 'boolean',
         ];
     }
 
@@ -91,6 +94,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isVerifier(): bool
     {
         return in_array($this->role, ['verifier', 'admin'], true);
+    }
+
+    public function wantsEmailNotifications(): bool
+    {
+        return $this->email_notifications_enabled;
     }
 
     public function hasCompletedOnboarding(): bool

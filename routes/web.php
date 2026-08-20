@@ -7,17 +7,22 @@ use App\Http\Controllers\BloodRequestController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DonorSearchController;
 use App\Http\Controllers\LeaderboardController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RequestResponseController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\VerificationQueueController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('landing');
 })->name('landing');
+
+// Guest-reachable — the toggle lives in both the guest and app layouts.
+Route::post('/locale/{locale}', [LocaleController::class, 'update'])->name('locale.update');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding.show');
@@ -29,6 +34,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('/profile/donor', [ProfileController::class, 'updateDonorProfile'])->name('profile.donor.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
+    Route::patch('/settings/notifications', [SettingsController::class, 'updateNotifications'])->name('settings.notifications.update');
 });
 
 Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {

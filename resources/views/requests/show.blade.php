@@ -179,7 +179,7 @@
                             <x-input-label value="Reason" />
                             <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
                                 @foreach ($reportReasons as $value => $label)
-                                    <label class="flex cursor-pointer items-center justify-center rounded-lg border border-border px-2 py-2 text-xs has-[:checked]:border-primary has-[:checked]:bg-accent has-[:checked]:font-medium has-[:checked]:text-accent-foreground">
+                                    <label class="flex cursor-pointer items-center justify-center rounded-lg border border-border px-2 py-3 text-xs has-[:checked]:border-primary has-[:checked]:bg-accent has-[:checked]:font-medium has-[:checked]:text-accent-foreground">
                                         <input type="radio" name="reason" value="{{ $value }}" class="sr-only" required>
                                         {{ $label }}
                                     </label>

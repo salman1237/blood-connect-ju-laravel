@@ -47,6 +47,7 @@ class GoogleAuthController extends Controller
                     // forceCreate() doesn't refresh the in-memory model, so the
                     // is_active check just below would otherwise see null.
                     'is_active' => true,
+                    'email_notifications_enabled' => true,
                 ]);
             }
         }

@@ -43,6 +43,7 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'is_active' => true,
+            'email_notifications_enabled' => true,
         ]);
 
         event(new Registered($user));

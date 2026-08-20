@@ -15,8 +15,8 @@
                 <x-logo />
                 <div class="flex items-center gap-2">
                     <x-language-toggle />
-                    <x-button :href="route('login')" variant="ghost" size="sm" class="hidden sm:inline-flex">Login</x-button>
-                    <x-button :href="route('register')" size="sm">Sign up</x-button>
+                    <x-button :href="route('login')" variant="ghost" size="sm" class="hidden sm:inline-flex">{{ __('common.login') }}</x-button>
+                    <x-button :href="route('register')" size="sm">{{ __('common.sign_up') }}</x-button>
                 </div>
             </div>
         </header>
@@ -26,22 +26,20 @@
                 <div class="grid items-start gap-10 lg:grid-cols-2">
                     <div>
                         <span class="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
-                            <x-icon name="droplet" class="size-3.5" /> 1,344 registered campus donors
+                            <x-icon name="droplet" class="size-3.5" /> 1,344 {{ __('landing.donor_badge') }}
                         </span>
                         <h1 class="mt-5 text-4xl font-semibold leading-[1.1] sm:text-5xl">
-                            When someone on campus needs blood, minutes matter.
+                            {{ __('landing.headline') }}
                         </h1>
                         <p class="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground">
-                            Blood Connect JU is a coordination platform for Jahangirnagar University students,
-                            faculty and staff. Post a verified emergency request, find eligible donors by blood
-                            group and hall, and track every request to fulfilment.
+                            {{ __('landing.subtext') }}
                         </p>
                         <div class="mt-7 flex flex-wrap gap-3">
-                            <x-button :href="route('register')" size="lg">Sign up as a donor</x-button>
-                            <x-button :href="route('login')" size="lg" variant="outline">Login</x-button>
+                            <x-button :href="route('register')" size="lg">{{ __('landing.cta_signup') }}</x-button>
+                            <x-button :href="route('login')" size="lg" variant="outline">{{ __('landing.cta_login') }}</x-button>
                         </div>
                         <dl class="mt-10 grid grid-cols-3 gap-4 border-t border-border pt-6">
-                            @foreach ([['k' => 'Requests fulfilled', 'v' => '612'], ['k' => 'Avg. response time', 'v' => '27 min'], ['k' => 'Halls & depts', 'v' => '34']] as $stat)
+                            @foreach ([['k' => __('landing.stat_fulfilled'), 'v' => '612'], ['k' => __('landing.stat_response'), 'v' => '27 min'], ['k' => __('landing.stat_halls'), 'v' => '34']] as $stat)
                                 <div>
                                     <dt class="text-xs text-muted-foreground">{{ $stat['k'] }}</dt>
                                     <dd class="text-2xl font-semibold tabular-nums">{{ $stat['v'] }}</dd>
@@ -53,11 +51,11 @@
                     <div class="surface-panel p-5">
                         <div class="mb-4 flex items-center justify-between">
                             <div>
-                                <h2 class="text-sm font-semibold">Live requests right now</h2>
-                                <p class="text-xs text-muted-foreground">Updated a moment ago</p>
+                                <h2 class="text-sm font-semibold">{{ __('landing.live_requests_title') }}</h2>
+                                <p class="text-xs text-muted-foreground">{{ __('landing.live_requests_subtitle') }}</p>
                             </div>
                             <span class="inline-flex items-center gap-1.5 text-xs text-primary">
-                                <span class="size-2 animate-pulse rounded-full bg-primary"></span> Live
+                                <span class="size-2 animate-pulse rounded-full bg-primary"></span> {{ __('landing.live') }}
                             </span>
                         </div>
                         <ul class="space-y-3">
@@ -67,7 +65,7 @@
                                         <x-blood-drop :group="$request['group']" />
                                         <div class="min-w-0 flex-1">
                                             <div class="flex flex-wrap items-center gap-2">
-                                                <span class="text-sm font-semibold">{{ $request['units'] }} units needed</span>
+                                                <span class="text-sm font-semibold">{{ __('landing.units_needed', ['count' => $request['units']]) }}</span>
                                                 <x-urgency-badge :urgency="$request['urgency']" />
                                                 @if ($request['verified'])
                                                     <x-verified-badge />
@@ -84,7 +82,7 @@
                                 </li>
                             @endforeach
                         </ul>
-                        <x-button :href="route('login')" variant="outline" class="mt-4 w-full">See all active requests</x-button>
+                        <x-button :href="route('login')" variant="outline" class="mt-4 w-full">{{ __('landing.see_all') }}</x-button>
                     </div>
                 </div>
             </section>
@@ -92,9 +90,9 @@
             <section class="border-y border-border bg-surface">
                 <div class="mx-auto grid max-w-6xl gap-6 px-4 py-14 sm:grid-cols-3">
                     @foreach ([
-                        ['icon' => 'shield-check', 't' => 'Verified requests only', 'd' => 'Student volunteers verify hospital details before a request is broadcast campus-wide.'],
-                        ['icon' => 'heart-handshake', 't' => 'Matched by group & hall', 'd' => 'Donors get alerts only for compatible blood groups near their hall or department.'],
-                        ['icon' => 'clock', 't' => 'Eligibility built in', 'd' => 'The platform tracks the 120-day gap so nobody is asked to donate too early.'],
+                        ['icon' => 'shield-check', 't' => __('landing.feature_1_title'), 'd' => __('landing.feature_1_desc')],
+                        ['icon' => 'heart-handshake', 't' => __('landing.feature_2_title'), 'd' => __('landing.feature_2_desc')],
+                        ['icon' => 'clock', 't' => __('landing.feature_3_title'), 'd' => __('landing.feature_3_desc')],
                     ] as $feature)
                         <div class="surface-panel p-5">
                             <span class="flex size-10 items-center justify-center rounded-xl bg-accent text-accent-foreground">
@@ -108,16 +106,16 @@
             </section>
 
             <section class="mx-auto max-w-3xl px-4 py-16 text-center">
-                <h2 class="text-2xl font-semibold">Ready to be someone's lifeline?</h2>
+                <h2 class="text-2xl font-semibold">{{ __('landing.ready_title') }}</h2>
                 <p class="mt-2 text-sm text-muted-foreground">
-                    Register with your university email. It takes under two minutes.
+                    {{ __('landing.ready_subtitle') }}
                 </p>
-                <x-button :href="route('register')" size="lg" class="mt-6">Create your donor profile</x-button>
+                <x-button :href="route('register')" size="lg" class="mt-6">{{ __('landing.ready_cta') }}</x-button>
             </section>
         </main>
 
         <footer class="border-t border-border py-8 text-center text-xs text-muted-foreground">
-            Blood Connect JU · A student-run initiative · Savar, Dhaka
+            {{ __('landing.footer') }}
         </footer>
     </div>
 </x-guest-layout>
