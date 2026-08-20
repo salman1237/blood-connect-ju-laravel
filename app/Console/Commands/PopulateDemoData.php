@@ -20,6 +20,9 @@ use Illuminate\Support\Facades\Hash;
  * address (IANA-reserved for exactly this) so nothing can ever actually
  * send mail to a real inbox, and events are suppressed for the whole run
  * so it doesn't dispatch 500 real notification jobs.
+ *
+ * Deliberately dependency-free (no Faker) — this needs to run in
+ * production, where `composer install --no-dev` never installs it.
  */
 class PopulateDemoData extends Command
 {
@@ -78,6 +81,8 @@ class PopulateDemoData extends Command
 
     private const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
+    private const URGENCIES = ['critical', 'within_24h', 'planned'];
+
     public function handle(): int
     {
         $donorCount = (int) $this->option('donors');
@@ -121,19 +126,19 @@ class PopulateDemoData extends Command
         $donors = collect();
 
         for ($i = 0; $i < $count; $i++) {
-            $firstName = self::FIRST_NAMES[array_rand(self::FIRST_NAMES)];
-            $lastName = self::LAST_NAMES[array_rand(self::LAST_NAMES)];
-            $isStudent = fake()->boolean(60);
-            $role = $isStudent ? 'student' : fake()->randomElement(['staff', 'faculty']);
+            $firstName = $this->randomElement(self::FIRST_NAMES);
+            $lastName = $this->randomElement(self::LAST_NAMES);
+            $isStudent = $this->randomBool(60);
+            $role = $isStudent ? 'student' : $this->randomElement(['staff', 'faculty']);
 
             $user = User::create([
                 'name' => "{$firstName} {$lastName}",
                 'email' => strtolower("{$firstName}.{$lastName}.demo{$i}@example.com"),
                 'password' => $password,
                 'role' => $role,
-                'hall' => $isStudent ? fake()->randomElement($halls) : null,
-                'department' => fake()->randomElement($departments),
-                'phone' => '01'.fake()->numerify('#########'),
+                'hall' => $isStudent ? $this->randomElement($halls) : null,
+                'department' => $this->randomElement($departments),
+                'phone' => '01'.$this->randomDigits(9),
                 'email_verified_at' => now(),
                 'is_active' => true,
                 'email_notifications_enabled' => true,
@@ -141,9 +146,9 @@ class PopulateDemoData extends Command
 
             $profile = DonorProfile::create([
                 'user_id' => $user->id,
-                'blood_group' => fake()->randomElement(self::BLOOD_GROUPS),
-                'is_available' => fake()->boolean(85),
-                'last_donation_date' => fake()->boolean(40) ? fake()->dateTimeBetween('-2 years', '-130 days') : null,
+                'blood_group' => $this->randomElement(self::BLOOD_GROUPS),
+                'is_available' => $this->randomBool(85),
+                'last_donation_date' => $this->randomBool(40) ? $this->randomDateBetween('-2 years', '-130 days') : null,
                 'trust_score' => 0,
             ]);
 
@@ -174,14 +179,14 @@ class PopulateDemoData extends Command
 
     private function createOneRequest(Collection $donors, Collection $verifiers, Collection $badges): void
     {
-        $hospital = fake()->randomElement(self::HOSPITALS);
-        $bloodGroup = fake()->randomElement(self::BLOOD_GROUPS);
+        $hospital = $this->randomElement(self::HOSPITALS);
+        $bloodGroup = $this->randomElement(self::BLOOD_GROUPS);
         $requesterEntry = $donors->random();
         $requester = $requesterEntry['user'];
 
         // Weighted toward a mature, successful track record rather than a
         // pile of simultaneous live emergencies — better story for a demo.
-        $statusRoll = fake()->numberBetween(1, 100);
+        $statusRoll = random_int(1, 100);
         $status = match (true) {
             $statusRoll <= 15 => 'open',
             $statusRoll <= 70 => 'fulfilled',
@@ -189,20 +194,20 @@ class PopulateDemoData extends Command
         };
 
         $createdAt = $status === 'open'
-            ? fake()->dateTimeBetween('-3 days', 'now')
-            : fake()->dateTimeBetween('-60 days', '-4 days');
+            ? $this->randomDateBetween('-3 days', 'now')
+            : $this->randomDateBetween('-60 days', '-4 days');
 
-        $expiresAt = Carbon::instance($createdAt)->addHours(BloodRequest::EXPIRES_AFTER_HOURS);
+        $expiresAt = $createdAt->copy()->addHours(BloodRequest::EXPIRES_AFTER_HOURS);
 
         $request = BloodRequest::create([
             'requester_id' => $requester->id,
             'blood_group' => $bloodGroup,
-            'units_needed' => fake()->numberBetween(1, 4),
+            'units_needed' => random_int(1, 4),
             'hospital_name' => $hospital['name'],
             'location' => $hospital['location'],
-            'urgency' => fake()->randomElement(['critical', 'within_24h', 'planned']),
-            'patient_context' => fake()->randomElement(self::PATIENT_CONTEXTS),
-            'contact_method' => '01'.fake()->numerify('#########'),
+            'urgency' => $this->randomElement(self::URGENCIES),
+            'patient_context' => $this->randomElement(self::PATIENT_CONTEXTS),
+            'contact_method' => '01'.$this->randomDigits(9),
             'status' => $status,
             'is_verified' => true,
             'verified_by' => $verifiers->random()->id,
@@ -221,7 +226,7 @@ class PopulateDemoData extends Command
         $donor = $donorEntry['user'];
         $donorProfile = $donorEntry['profile'];
 
-        $confirmedAt = Carbon::instance($createdAt)->addHours(fake()->numberBetween(1, 48));
+        $confirmedAt = $createdAt->copy()->addHours(random_int(1, 48));
 
         RequestResponse::create([
             'request_id' => $request->id,
@@ -259,5 +264,34 @@ class PopulateDemoData extends Command
         if (in_array($profile->blood_group, DonorProfile::RARE_BLOOD_GROUPS, true) && $badges->has('rare-blood-type')) {
             $donor->badges()->syncWithoutDetaching([$badges['rare-blood-type']->id => ['earned_at' => now()]]);
         }
+    }
+
+    private function randomElement(array $items): mixed
+    {
+        return $items[array_rand($items)];
+    }
+
+    /** True with the given percent chance (0-100). */
+    private function randomBool(int $percentChance): bool
+    {
+        return random_int(1, 100) <= $percentChance;
+    }
+
+    private function randomDigits(int $length): string
+    {
+        $digits = '';
+        for ($i = 0; $i < $length; $i++) {
+            $digits .= random_int(0, 9);
+        }
+
+        return $digits;
+    }
+
+    private function randomDateBetween(string $start, string $end): Carbon
+    {
+        $startTimestamp = Carbon::parse($start)->timestamp;
+        $endTimestamp = Carbon::parse($end)->timestamp;
+
+        return Carbon::createFromTimestamp(random_int($startTimestamp, $endTimestamp));
     }
 }
