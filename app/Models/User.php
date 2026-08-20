@@ -37,6 +37,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'phone_has_whatsapp',
         'whatsapp_number',
         'google_id',
+        'avatar_url',
     ];
 
     /**

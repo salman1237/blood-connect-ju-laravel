@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -55,6 +56,52 @@ class ProfileController extends Controller
         $request->user()->updateDonorProfile($request->validated());
 
         return Redirect::route('profile.edit')->with('status', 'donor-profile-updated');
+    }
+
+    /**
+     * Upload (or replace) the user's profile photo — the initials avatar,
+     * or whatever was imported from Google, stays the fallback until this
+     * runs. Any previously locally-stored photo is cleaned up so replaced
+     * uploads don't pile up in storage; a Google-hosted URL is left alone.
+     */
+    public function updatePhoto(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'photo' => ['required', 'image', 'max:4096'],
+        ]);
+
+        $user = $request->user();
+
+        $this->deleteStoredAvatarIfLocal($user->avatar_url);
+
+        $path = $request->file('photo')->store('avatars', 'public');
+
+        $user->update(['avatar_url' => Storage::disk('public')->url($path)]);
+
+        return Redirect::route('profile.edit')->with('status', 'photo-updated');
+    }
+
+    /**
+     * Remove the user's photo, reverting to the initials avatar.
+     */
+    public function destroyPhoto(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $this->deleteStoredAvatarIfLocal($user->avatar_url);
+
+        $user->update(['avatar_url' => null]);
+
+        return Redirect::route('profile.edit')->with('status', 'photo-removed');
+    }
+
+    private function deleteStoredAvatarIfLocal(?string $avatarUrl): void
+    {
+        $publicBaseUrl = Storage::disk('public')->url('');
+
+        if ($avatarUrl && str_starts_with($avatarUrl, $publicBaseUrl)) {
+            Storage::disk('public')->delete(str_replace($publicBaseUrl, '', $avatarUrl));
+        }
     }
 
     /**

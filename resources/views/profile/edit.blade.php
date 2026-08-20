@@ -1,6 +1,10 @@
 <x-app-layout title="Profile" subtitle="Account & donor settings">
     <div class="space-y-6">
         <div class="surface-panel p-5 sm:p-6">
+            @include('profile.partials.update-photo-form')
+        </div>
+
+        <div class="surface-panel p-5 sm:p-6">
             @include('profile.partials.donor-profile-form')
         </div>
 

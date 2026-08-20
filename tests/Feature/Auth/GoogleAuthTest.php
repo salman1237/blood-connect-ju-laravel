@@ -13,12 +13,13 @@ class GoogleAuthTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function fakeGoogleUser(string $id, string $email, string $name): void
+    private function fakeGoogleUser(string $id, string $email, string $name, ?string $avatar = 'https://lh3.googleusercontent.com/fake-avatar.jpg'): void
     {
         $socialiteUser = Mockery::mock(SocialiteUser::class);
         $socialiteUser->shouldReceive('getId')->andReturn($id);
         $socialiteUser->shouldReceive('getEmail')->andReturn($email);
         $socialiteUser->shouldReceive('getName')->andReturn($name);
+        $socialiteUser->shouldReceive('getAvatar')->andReturn($avatar);
 
         Socialite::shouldReceive('driver->user')->andReturn($socialiteUser);
     }
@@ -87,5 +88,45 @@ class GoogleAuthTest extends TestCase
         $response = $this->get('/dashboard');
 
         $response->assertRedirect(route('onboarding.show'));
+    }
+
+    public function test_new_google_user_imports_their_google_avatar(): void
+    {
+        $this->fakeGoogleUser('google-222', 'avatar@gmail.com', 'Avatar User', 'https://lh3.googleusercontent.com/photo.jpg');
+
+        $this->get('/auth/google/callback');
+
+        $user = User::where('email', 'avatar@gmail.com')->firstOrFail();
+        $this->assertSame('https://lh3.googleusercontent.com/photo.jpg', $user->avatar_url);
+    }
+
+    public function test_linking_google_to_an_existing_account_without_a_photo_imports_the_avatar(): void
+    {
+        $existing = User::factory()->create([
+            'email' => 'linkphoto@example.com',
+            'google_id' => null,
+            'avatar_url' => null,
+        ]);
+
+        $this->fakeGoogleUser('google-333', 'linkphoto@example.com', 'Link Photo', 'https://lh3.googleusercontent.com/linked.jpg');
+
+        $this->get('/auth/google/callback');
+
+        $this->assertSame('https://lh3.googleusercontent.com/linked.jpg', $existing->fresh()->avatar_url);
+    }
+
+    public function test_linking_google_never_overwrites_an_existing_photo(): void
+    {
+        $existing = User::factory()->create([
+            'email' => 'keepphoto@example.com',
+            'google_id' => null,
+            'avatar_url' => 'https://blood.deshlet.com/storage/avatars/self-uploaded.jpg',
+        ]);
+
+        $this->fakeGoogleUser('google-444', 'keepphoto@example.com', 'Keep Photo', 'https://lh3.googleusercontent.com/google.jpg');
+
+        $this->get('/auth/google/callback');
+
+        $this->assertSame('https://blood.deshlet.com/storage/avatars/self-uploaded.jpg', $existing->fresh()->avatar_url);
     }
 }

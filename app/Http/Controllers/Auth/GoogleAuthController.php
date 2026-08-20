@@ -31,7 +31,12 @@ class GoogleAuthController extends Controller
             $user = User::where('email', $googleUser->getEmail())->first();
 
             if ($user) {
-                $user->forceFill(['google_id' => $googleUser->getId()])->save();
+                // Only import the Google photo if the account doesn't already
+                // have one — never clobber a photo the user uploaded themselves.
+                $user->forceFill([
+                    'google_id' => $googleUser->getId(),
+                    'avatar_url' => $user->avatar_url ?? $googleUser->getAvatar(),
+                ])->save();
             } else {
                 // Google has already verified this email address, so there's no
                 // separate OTP/verification step for accounts created this way.
@@ -41,6 +46,7 @@ class GoogleAuthController extends Controller
                     'name' => $googleUser->getName(),
                     'email' => $googleUser->getEmail(),
                     'google_id' => $googleUser->getId(),
+                    'avatar_url' => $googleUser->getAvatar(),
                     'password' => null,
                     'email_verified_at' => now(),
                     // Set explicitly, not left to the migration's DB default —

@@ -39,6 +39,7 @@ jobs:
             npm ci
             npm run build
             /opt/cpanel/ea-php82/root/usr/bin/php artisan migrate --force
+            /opt/cpanel/ea-php82/root/usr/bin/php artisan storage:link
             /opt/cpanel/ea-php82/root/usr/bin/php artisan config:clear
             /opt/cpanel/ea-php82/root/usr/bin/php artisan config:cache
             /opt/cpanel/ea-php82/root/usr/bin/php artisan route:cache
