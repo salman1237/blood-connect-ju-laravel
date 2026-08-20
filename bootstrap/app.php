@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\EnsureOnboardingComplete;
 use App\Http\Middleware\EnsureUserHasRole;
 use Illuminate\Foundation\Application;
@@ -17,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => EnsureUserHasRole::class,
             'onboarded' => EnsureOnboardingComplete::class,
         ]);
+        // Global (not just on gated route groups) so a session started
+        // before deactivation is cut off on its very next request anywhere.
+        $middleware->web(append: [EnsureAccountIsActive::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

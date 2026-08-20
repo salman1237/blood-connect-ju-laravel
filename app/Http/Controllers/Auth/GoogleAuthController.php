@@ -43,8 +43,17 @@ class GoogleAuthController extends Controller
                     'google_id' => $googleUser->getId(),
                     'password' => null,
                     'email_verified_at' => now(),
+                    // Set explicitly, not left to the migration's DB default —
+                    // forceCreate() doesn't refresh the in-memory model, so the
+                    // is_active check just below would otherwise see null.
+                    'is_active' => true,
                 ]);
             }
+        }
+
+        if (! $user->is_active) {
+            return redirect()->route('login')
+                ->withErrors(['email' => 'This account has been deactivated. Contact an admin if you believe this is a mistake.']);
         }
 
         Auth::login($user, remember: true);

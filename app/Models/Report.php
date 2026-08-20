@@ -24,7 +24,16 @@ class Report extends Model
         'reason',
         'details',
         'status',
+        'reviewed_by',
+        'reviewed_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'reviewed_at' => 'datetime',
+        ];
+    }
 
     public function bloodRequest(): BelongsTo
     {
@@ -34,5 +43,10 @@ class Report extends Model
     public function reporter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reporter_id');
+    }
+
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 }

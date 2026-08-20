@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AdminReportController;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\BloodRequestController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DonorSearchController;
@@ -53,6 +56,16 @@ Route::middleware(['auth', 'verified', 'role:verifier,admin'])->prefix('verify')
     Route::get('/queue', VerificationQueueController::class)->name('verify.queue');
     Route::post('/requests/{request}/approve', [VerificationQueueController::class, 'approve'])->name('verify.approve');
     Route::post('/requests/{request}/reject', [VerificationQueueController::class, 'reject'])->name('verify.reject');
+});
+
+// Admin — not gated by 'onboarded' for the same reason as the verifier
+// group above: admins are assigned the role directly, not self-selected.
+Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', AdminDashboardController::class)->name('dashboard');
+    Route::resource('users', AdminUserController::class)->except(['create', 'store']);
+    Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+    Route::post('/reports/{report}/review', [AdminReportController::class, 'review'])->name('reports.review');
+    Route::post('/reports/{report}/dismiss', [AdminReportController::class, 'dismiss'])->name('reports.dismiss');
 });
 
 require __DIR__.'/auth.php';

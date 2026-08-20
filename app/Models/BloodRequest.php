@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[ObservedBy(BloodRequestObserver::class)]
 class BloodRequest extends Model
@@ -82,6 +83,12 @@ class BloodRequest extends Model
     public function responses(): HasMany
     {
         return $this->hasMany(RequestResponse::class, 'request_id');
+    }
+
+    /** Used for the admin dashboard's average-response-time stat. */
+    public function firstResponse(): HasOne
+    {
+        return $this->hasOne(RequestResponse::class, 'request_id')->oldestOfMany();
     }
 
     public function reports(): HasMany

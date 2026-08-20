@@ -30,6 +30,11 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            // Set explicitly rather than relying on the migration's DB
+            // default — Eloquent doesn't re-fetch after create(), so
+            // actingAs() in tests would otherwise see a null in-memory
+            // attribute even though the real row defaults to active.
+            'is_active' => true,
         ];
     }
 

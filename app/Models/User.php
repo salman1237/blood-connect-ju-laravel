@@ -26,6 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'role',
+        'is_active',
         'hall',
         'department',
         'phone',
@@ -52,6 +53,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -69,6 +71,16 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsToMany(Badge::class, 'donor_badges', 'donor_id', 'badge_id')
             ->withPivot('earned_at');
+    }
+
+    public function bloodRequests(): HasMany
+    {
+        return $this->hasMany(BloodRequest::class, 'requester_id');
+    }
+
+    public function responses(): HasMany
+    {
+        return $this->hasMany(RequestResponse::class, 'donor_id');
     }
 
     public function isAdmin(): bool
