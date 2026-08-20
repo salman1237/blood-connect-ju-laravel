@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -56,5 +57,37 @@ class DonorProfile extends Model
         return Attribute::make(
             get: fn () => $this->last_donation_date?->addDays(self::ELIGIBILITY_WINDOW_DAYS),
         );
+    }
+
+    /** Query-level equivalent of the is_eligible accessor. */
+    public function scopeEligible(Builder $query): Builder
+    {
+        $cutoff = now()->subDays(self::ELIGIBILITY_WINDOW_DAYS)->startOfDay();
+
+        return $query->where(function (Builder $q) use ($cutoff) {
+            $q->whereNull('donor_profiles.last_donation_date')
+                ->orWhere('donor_profiles.last_donation_date', '<', $cutoff);
+        });
+    }
+
+    /**
+     * Eligible donors who could give blood for the given request, ranked:
+     * exact blood-group match before compatible-but-different, same
+     * hall/department before elsewhere, available before unavailable.
+     */
+    public function scopeMatchingRequest(Builder $query, BloodRequest $request): Builder
+    {
+        return $query
+            ->select('donor_profiles.*')
+            ->join('users', 'users.id', '=', 'donor_profiles.user_id')
+            ->whereIn('donor_profiles.blood_group', $request->compatibleDonorBloodGroups())
+            ->where('users.id', '!=', $request->requester_id)
+            ->eligible()
+            ->orderByRaw('CASE WHEN donor_profiles.blood_group = ? THEN 0 ELSE 1 END', [$request->blood_group])
+            ->orderByRaw(
+                'CASE WHEN (? IS NOT NULL AND users.hall = ?) OR (? IS NOT NULL AND users.department = ?) THEN 0 ELSE 1 END',
+                [$request->requester->hall, $request->requester->hall, $request->requester->department, $request->requester->department]
+            )
+            ->orderByDesc('donor_profiles.is_available');
     }
 }

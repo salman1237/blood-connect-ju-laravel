@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\BloodRequestController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DonorSearchController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RequestResponseController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -27,6 +29,10 @@ Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
 
     Route::resource('requests', BloodRequestController::class)->except(['edit', 'update', 'destroy']);
     Route::post('/requests/{request}/fulfill', [BloodRequestController::class, 'fulfill'])->name('requests.fulfill');
+    Route::post('/requests/{request}/respond', [RequestResponseController::class, 'store'])->name('requests.respond');
+    Route::patch('/requests/{request}/responses/{response}/confirm', [RequestResponseController::class, 'confirm'])->name('requests.responses.confirm');
+
+    Route::get('/donors', DonorSearchController::class)->name('donors.index');
 });
 
 require __DIR__.'/auth.php';

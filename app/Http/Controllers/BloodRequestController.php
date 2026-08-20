@@ -51,14 +51,15 @@ class BloodRequestController extends Controller
     {
         $this->authorize('view', $request);
 
-        $request->load(['requester', 'verifier']);
+        $request->load(['requester', 'verifier', 'responses.donor']);
 
         return view('requests.show', ['bloodRequest' => $request]);
     }
 
     /**
-     * Advance the status one step: open -> donor_found -> fulfilled.
-     * Picking a specific confirmed donor comes in the matching phase.
+     * Advance the overall status one step: open -> donor_found -> fulfilled.
+     * Separate from confirming which specific donor helped — see
+     * RequestResponseController::confirm.
      */
     public function fulfill(BloodRequest $request): RedirectResponse
     {

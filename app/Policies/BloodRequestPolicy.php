@@ -32,4 +32,20 @@ class BloodRequestPolicy
         return $user->id === $bloodRequest->requester_id
             && in_array($bloodRequest->status, ['open', 'donor_found'], true);
     }
+
+    /**
+     * Can this user click "I can donate" on this request — not their own
+     * request, still active, and they're an eligible, compatible donor.
+     */
+    public function respond(User $user, BloodRequest $bloodRequest): bool
+    {
+        $profile = $user->donorProfile;
+
+        return $user->id !== $bloodRequest->requester_id
+            && in_array($bloodRequest->status, ['open', 'donor_found'], true)
+            && $profile !== null
+            && $profile->is_eligible
+            && in_array($profile->blood_group, $bloodRequest->compatibleDonorBloodGroups(), true)
+            && ! $bloodRequest->responses()->where('donor_id', $user->id)->exists();
+    }
 }

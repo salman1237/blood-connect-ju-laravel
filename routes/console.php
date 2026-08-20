@@ -9,3 +9,10 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('requests:expire')->hourly();
+
+// Shared hosting has no persistent queue:work daemon (no supervisor access),
+// so queued jobs (notifications, etc.) are drained via the same cron that
+// already fires schedule:run every minute, instead of a dedicated worker.
+Schedule::command('queue:work --stop-when-empty --max-time=50')
+    ->everyMinute()
+    ->withoutOverlapping();
