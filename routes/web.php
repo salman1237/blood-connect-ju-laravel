@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\BloodRequestController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -21,9 +23,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
+
+    Route::resource('requests', BloodRequestController::class)->except(['edit', 'update', 'destroy']);
+    Route::post('/requests/{request}/fulfill', [BloodRequestController::class, 'fulfill'])->name('requests.fulfill');
 });
 
 require __DIR__.'/auth.php';
