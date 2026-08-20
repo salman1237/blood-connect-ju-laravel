@@ -1,14 +1,6 @@
 <x-guest-layout>
     <x-slot name="title">Blood Connect JU — Campus Blood Donation Network</x-slot>
 
-    @php
-        $liveRequests = [
-            ['group' => 'O-', 'units' => 2, 'urgency' => 'critical', 'verified' => true, 'hospital' => 'Enam Medical College Hospital', 'posted_ago' => '12 min ago'],
-            ['group' => 'B+', 'units' => 1, 'urgency' => 'within_24h', 'verified' => true, 'hospital' => 'Savar Upazila Health Complex', 'posted_ago' => '48 min ago'],
-            ['group' => 'A+', 'units' => 3, 'urgency' => 'critical', 'verified' => false, 'hospital' => 'Dhaka Medical College Hospital', 'posted_ago' => '1 hr ago'],
-        ];
-    @endphp
-
     <div class="min-h-screen bg-background">
         <header class="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
             <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
@@ -26,7 +18,7 @@
                 <div class="grid items-start gap-10 lg:grid-cols-2">
                     <div>
                         <span class="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
-                            <x-icon name="droplet" class="size-3.5" /> 1,344 {{ __('landing.donor_badge') }}
+                            <x-icon name="droplet" class="size-3.5" /> {{ number_format($donorCount) }} {{ __('landing.donor_badge') }}
                         </span>
                         <h1 class="mt-5 text-4xl font-semibold leading-[1.1] sm:text-5xl">
                             {{ __('landing.headline') }}
@@ -39,7 +31,11 @@
                             <x-button :href="route('login')" size="lg" variant="outline">{{ __('landing.cta_login') }}</x-button>
                         </div>
                         <dl class="mt-10 grid grid-cols-3 gap-4 border-t border-border pt-6">
-                            @foreach ([['k' => __('landing.stat_fulfilled'), 'v' => '612'], ['k' => __('landing.stat_response'), 'v' => '27 min'], ['k' => __('landing.stat_halls'), 'v' => '34']] as $stat)
+                            @foreach ([
+                                ['k' => __('landing.stat_fulfilled'), 'v' => number_format($fulfilledCount)],
+                                ['k' => __('landing.stat_response'), 'v' => $avgResponseMinutes === null ? '—' : ($avgResponseMinutes < 60 ? round($avgResponseMinutes).' min' : round($avgResponseMinutes / 60, 1).' hr')],
+                                ['k' => __('landing.stat_halls'), 'v' => number_format($hallsAndDepartmentsCount)],
+                            ] as $stat)
                                 <div>
                                     <dt class="text-xs text-muted-foreground">{{ $stat['k'] }}</dt>
                                     <dd class="text-2xl font-semibold tabular-nums">{{ $stat['v'] }}</dd>
@@ -58,30 +54,34 @@
                                 <span class="size-2 animate-pulse rounded-full bg-primary"></span> {{ __('landing.live') }}
                             </span>
                         </div>
-                        <ul class="space-y-3">
-                            @foreach ($liveRequests as $request)
-                                <li class="rounded-xl border border-border p-3">
-                                    <div class="flex items-start gap-3">
-                                        <x-blood-drop :group="$request['group']" />
-                                        <div class="min-w-0 flex-1">
-                                            <div class="flex flex-wrap items-center gap-2">
-                                                <span class="text-sm font-semibold">{{ __('landing.units_needed', ['count' => $request['units']]) }}</span>
-                                                <x-urgency-badge :urgency="$request['urgency']" />
-                                                @if ($request['verified'])
-                                                    <x-verified-badge />
-                                                @endif
+                        @if ($liveRequests->isEmpty())
+                            <p class="py-6 text-center text-sm text-muted-foreground">No open requests right now — hopefully it stays that way.</p>
+                        @else
+                            <ul class="space-y-3">
+                                @foreach ($liveRequests as $request)
+                                    <li class="rounded-xl border border-border p-3">
+                                        <div class="flex items-start gap-3">
+                                            <x-blood-drop :group="$request->blood_group" />
+                                            <div class="min-w-0 flex-1">
+                                                <div class="flex flex-wrap items-center gap-2">
+                                                    <span class="text-sm font-semibold">{{ __('landing.units_needed', ['count' => $request->units_needed]) }}</span>
+                                                    <x-urgency-badge :urgency="$request->urgency" />
+                                                    @if ($request->is_verified)
+                                                        <x-verified-badge />
+                                                    @endif
+                                                </div>
+                                                <p class="mt-1 flex items-center gap-1 truncate text-xs text-muted-foreground">
+                                                    <x-icon name="map-pin" class="size-3" /> {{ $request->hospital_name }}
+                                                </p>
+                                                <p class="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                                                    <x-icon name="clock" class="size-3" /> {{ $request->created_at->diffForHumans() }}
+                                                </p>
                                             </div>
-                                            <p class="mt-1 flex items-center gap-1 truncate text-xs text-muted-foreground">
-                                                <x-icon name="map-pin" class="size-3" /> {{ $request['hospital'] }}
-                                            </p>
-                                            <p class="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                                                <x-icon name="clock" class="size-3" /> {{ $request['posted_ago'] }}
-                                            </p>
                                         </div>
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ul>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
                         <x-button :href="route('login')" variant="outline" class="mt-4 w-full">{{ __('landing.see_all') }}</x-button>
                     </div>
                 </div>

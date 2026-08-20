@@ -43,21 +43,21 @@ class DatabaseSeeder extends Seeder
         // Spread across roles, blood groups, and halls/departments so the
         // dashboard, donor search, and leaderboard all look populated.
         $donors = collect([
-            ['name' => 'Rahim Uddin', 'email' => 'rahim.uddin@juniv.edu', 'role' => 'student', 'hall' => 'Al Beruni Hall', 'blood_group' => 'O-'],
-            ['name' => 'Karim Ahmed', 'email' => 'karim.ahmed@juniv.edu', 'role' => 'student', 'hall' => 'Al Beruni Hall', 'blood_group' => 'A+'],
-            ['name' => 'Nusrat Jahan', 'email' => 'nusrat.jahan@juniv.edu', 'role' => 'student', 'hall' => 'Rokeya Hall', 'blood_group' => 'B+'],
-            ['name' => 'Fatema Khatun', 'email' => 'fatema.khatun@juniv.edu', 'role' => 'student', 'hall' => 'Rokeya Hall', 'blood_group' => 'AB+'],
-            ['name' => 'Tanvir Hossain', 'email' => 'tanvir.hossain@juniv.edu', 'role' => 'student', 'hall' => 'Mir Mosharraf Hossain Hall', 'blood_group' => 'O+'],
-            ['name' => 'Sabbir Ahmed', 'email' => 'sabbir.ahmed@juniv.edu', 'role' => 'student', 'hall' => 'Mir Mosharraf Hossain Hall', 'blood_group' => 'A-'],
-            ['name' => 'Ismat Ara', 'email' => 'ismat.ara@juniv.edu', 'role' => 'student', 'hall' => 'Fazilatunnesa Hall', 'blood_group' => 'B-'],
-            ['name' => 'Shirin Akter', 'email' => 'shirin.akter@juniv.edu', 'role' => 'student', 'hall' => 'Fazilatunnesa Hall', 'blood_group' => 'AB-'],
-            ['name' => 'Jahid Hasan', 'email' => 'jahid.hasan@juniv.edu', 'role' => 'student', 'hall' => 'Bir Protik Taramon Bibi Hall', 'blood_group' => 'O-'],
+            ['name' => 'Rahim Uddin', 'email' => 'rahim.uddin@juniv.edu', 'role' => 'student', 'hall' => 'Al Beruni Hall', 'department' => 'Computer Science and Engineering', 'blood_group' => 'O-'],
+            ['name' => 'Karim Ahmed', 'email' => 'karim.ahmed@juniv.edu', 'role' => 'student', 'hall' => 'Al Beruni Hall', 'department' => 'Mathematics', 'blood_group' => 'A+'],
+            ['name' => 'Nusrat Jahan', 'email' => 'nusrat.jahan@juniv.edu', 'role' => 'student', 'hall' => 'Rokeya Hall', 'department' => 'English', 'blood_group' => 'B+'],
+            ['name' => 'Fatema Khatun', 'email' => 'fatema.khatun@juniv.edu', 'role' => 'student', 'hall' => 'Rokeya Hall', 'department' => 'Economics', 'blood_group' => 'AB+'],
+            ['name' => 'Tanvir Hossain', 'email' => 'tanvir.hossain@juniv.edu', 'role' => 'student', 'hall' => 'Mir Mosharraf Hossain Hall', 'department' => 'Physics', 'blood_group' => 'O+'],
+            ['name' => 'Sabbir Ahmed', 'email' => 'sabbir.ahmed@juniv.edu', 'role' => 'student', 'hall' => 'Mir Mosharraf Hossain Hall', 'department' => 'Statistics and Data Science', 'blood_group' => 'A-'],
+            ['name' => 'Ismat Ara', 'email' => 'ismat.ara@juniv.edu', 'role' => 'student', 'hall' => 'Fazilatunnesa Hall', 'department' => 'Bangla', 'blood_group' => 'B-'],
+            ['name' => 'Shirin Akter', 'email' => 'shirin.akter@juniv.edu', 'role' => 'student', 'hall' => 'Fazilatunnesa Hall', 'department' => 'Anthropology', 'blood_group' => 'AB-'],
+            ['name' => 'Jahid Hasan', 'email' => 'jahid.hasan@juniv.edu', 'role' => 'student', 'hall' => 'Bir Protik Taramon Bibi Hall', 'department' => 'History', 'blood_group' => 'O-'],
             ['name' => 'Mahmudul Alam', 'email' => 'mahmudul.alam@juniv.edu', 'role' => 'staff', 'department' => 'Computer Science and Engineering', 'blood_group' => 'A+'],
             ['name' => 'Rezaul Karim', 'email' => 'rezaul.karim@juniv.edu', 'role' => 'staff', 'department' => 'Physics', 'blood_group' => 'B+'],
             ['name' => 'Dilruba Yasmin', 'email' => 'dilruba.yasmin@juniv.edu', 'role' => 'faculty', 'department' => 'Economics', 'blood_group' => 'O+'],
             ['name' => 'Anisur Rahman', 'email' => 'anisur.rahman@juniv.edu', 'role' => 'faculty', 'department' => 'Mathematics', 'blood_group' => 'AB+'],
-            ['name' => 'Shamima Nasrin', 'email' => 'shamima.nasrin@juniv.edu', 'role' => 'student', 'hall' => 'Jahanara Imam Hall', 'blood_group' => 'A-', 'available' => false],
-            ['name' => 'Omar Faruk', 'email' => 'omar.faruk@juniv.edu', 'role' => 'student', 'hall' => 'Shaheed Salam-Barkat Hall', 'blood_group' => 'B-', 'available' => false],
+            ['name' => 'Shamima Nasrin', 'email' => 'shamima.nasrin@juniv.edu', 'role' => 'student', 'hall' => 'Jahanara Imam Hall', 'department' => 'Geography and Environment', 'blood_group' => 'A-', 'available' => false],
+            ['name' => 'Omar Faruk', 'email' => 'omar.faruk@juniv.edu', 'role' => 'student', 'hall' => 'Shaheed Salam-Barkat Hall', 'department' => 'Chemistry', 'blood_group' => 'B-', 'available' => false],
         ])->map(function ($data) use ($password) {
             $user = User::create([
                 'name' => $data['name'], 'email' => $data['email'], 'password' => $password,

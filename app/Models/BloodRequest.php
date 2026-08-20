@@ -85,10 +85,25 @@ class BloodRequest extends Model
         return $this->hasMany(RequestResponse::class, 'request_id');
     }
 
-    /** Used for the admin dashboard's average-response-time stat. */
+    /** Used for the average-response-time stat (admin dashboard, landing page). */
     public function firstResponse(): HasOne
     {
         return $this->hasOne(RequestResponse::class, 'request_id')->oldestOfMany();
+    }
+
+    /**
+     * Average minutes between a request being posted and its first
+     * response, across every request that's had at least one. Computed in
+     * PHP rather than a raw TIMESTAMPDIFF query — that function isn't
+     * portable to sqlite, which the test suite runs on.
+     */
+    public static function averageResponseMinutes(): ?float
+    {
+        return static::query()
+            ->has('firstResponse')
+            ->with('firstResponse')
+            ->get()
+            ->avg(fn (self $request) => $request->created_at->diffInMinutes($request->firstResponse->created_at));
     }
 
     public function reports(): HasMany

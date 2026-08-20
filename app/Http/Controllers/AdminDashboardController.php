@@ -18,19 +18,11 @@ class AdminDashboardController extends Controller
             ->orderBy('blood_group')
             ->pluck('total', 'blood_group');
 
-        // Computed in PHP rather than a raw TIMESTAMPDIFF query — that
-        // function isn't portable to sqlite, which the test suite runs on.
-        $avgResponseMinutes = BloodRequest::query()
-            ->has('firstResponse')
-            ->with('firstResponse')
-            ->get()
-            ->avg(fn (BloodRequest $request) => $request->created_at->diffInMinutes($request->firstResponse->created_at));
-
         return view('admin.dashboard', [
             'donorsByBloodGroup' => $donorsByBloodGroup,
             'fulfilledCount' => BloodRequest::where('status', 'fulfilled')->count(),
             'expiredCount' => BloodRequest::where('status', 'expired')->count(),
-            'avgResponseMinutes' => $avgResponseMinutes,
+            'avgResponseMinutes' => BloodRequest::averageResponseMinutes(),
             'pendingReportsCount' => Report::where('status', 'pending')->count(),
             'totalUsers' => User::count(),
             'activeUsers' => User::where('is_active', true)->count(),

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\DonorProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -40,9 +41,12 @@ class LocalizationTest extends TestCase
 
     public function test_logged_in_users_saved_locale_applies_on_a_fresh_session(): void
     {
-        $user = User::factory()->create(['locale' => 'bn']);
+        // '/' redirects a logged-in user straight to the dashboard, so check
+        // the locale applied via that page rather than the landing page.
+        $user = User::factory()->create(['role' => 'staff', 'department' => 'Physics', 'locale' => 'bn']);
+        DonorProfile::factory()->for($user)->create();
 
-        $response = $this->actingAs($user)->get('/');
+        $response = $this->actingAs($user)->get('/dashboard');
 
         $response->assertOk();
         $this->assertSame('bn', app()->getLocale());
