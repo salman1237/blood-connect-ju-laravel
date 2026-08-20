@@ -5,7 +5,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DonorSearchController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RequestResponseController;
+use App\Http\Controllers\VerificationQueueController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -30,9 +32,20 @@ Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
     Route::resource('requests', BloodRequestController::class)->except(['edit', 'update', 'destroy']);
     Route::post('/requests/{request}/fulfill', [BloodRequestController::class, 'fulfill'])->name('requests.fulfill');
     Route::post('/requests/{request}/respond', [RequestResponseController::class, 'store'])->name('requests.respond');
+    Route::post('/requests/{request}/report', [ReportController::class, 'store'])->name('requests.report');
     Route::patch('/requests/{request}/responses/{response}/confirm', [RequestResponseController::class, 'confirm'])->name('requests.responses.confirm');
+    Route::patch('/requests/{request}/responses/{response}/confirm-donation', [RequestResponseController::class, 'confirmDonation'])->name('requests.responses.confirm-donation');
 
     Route::get('/donors', DonorSearchController::class)->name('donors.index');
+});
+
+// Verifier — CR / hall provost office / medical center staff. Not gated by
+// 'onboarded': verifiers are assigned their role by an admin, not
+// self-selected, and don't need a donor profile to review requests.
+Route::middleware(['auth', 'verified', 'role:verifier,admin'])->prefix('verify')->group(function () {
+    Route::get('/queue', VerificationQueueController::class)->name('verify.queue');
+    Route::post('/requests/{request}/approve', [VerificationQueueController::class, 'approve'])->name('verify.approve');
+    Route::post('/requests/{request}/reject', [VerificationQueueController::class, 'reject'])->name('verify.reject');
 });
 
 require __DIR__.'/auth.php';

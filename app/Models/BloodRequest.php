@@ -50,6 +50,8 @@ class BloodRequest extends Model
         'status',
         'is_verified',
         'verified_by',
+        'rejected_at',
+        'rejected_by',
         'expires_at',
     ];
 
@@ -57,6 +59,7 @@ class BloodRequest extends Model
     {
         return [
             'is_verified' => 'boolean',
+            'rejected_at' => 'datetime',
             'expires_at' => 'datetime',
         ];
     }
@@ -71,9 +74,19 @@ class BloodRequest extends Model
         return $this->belongsTo(User::class, 'verified_by');
     }
 
+    public function rejecter(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejected_by');
+    }
+
     public function responses(): HasMany
     {
         return $this->hasMany(RequestResponse::class, 'request_id');
+    }
+
+    public function reports(): HasMany
+    {
+        return $this->hasMany(Report::class, 'request_id');
     }
 
     /** Donor blood groups that can safely give blood for this request. */
@@ -85,6 +98,14 @@ class BloodRequest extends Model
     public function scopeOpen(Builder $query): Builder
     {
         return $query->where('status', 'open');
+    }
+
+    /** Still-actionable requests a verifier hasn't ruled on yet. */
+    public function scopeAwaitingVerification(Builder $query): Builder
+    {
+        return $query->where('is_verified', false)
+            ->whereNull('rejected_at')
+            ->whereIn('status', ['open', 'donor_found']);
     }
 
     public function scopeUrgencyThenRecency(Builder $query): Builder

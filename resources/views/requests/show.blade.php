@@ -11,6 +11,10 @@
         <x-auth-session-status status="Thanks — the requester has been notified that you can donate." class="mb-5" />
     @elseif (session('status') === 'donor-confirmed')
         <x-auth-session-status status="Donor confirmed." class="mb-5" />
+    @elseif (session('status') === 'donation-confirmed')
+        <x-auth-session-status status="Thanks for confirming." class="mb-5" />
+    @elseif (session('status') === 'request-reported')
+        <x-auth-session-status status="Report submitted — an admin will review it." class="mb-5" />
     @endif
 
     <div class="mx-auto max-w-2xl space-y-5">
@@ -86,24 +90,59 @@
                 <h3 class="text-sm font-semibold">Responders ({{ $bloodRequest->responses->count() }})</h3>
                 <ul class="mt-3 space-y-2">
                     @foreach ($bloodRequest->responses as $response)
-                        <li class="flex items-center justify-between gap-3 rounded-xl border border-border p-3">
-                            <div class="min-w-0">
-                                <p class="truncate text-sm font-medium">{{ $response->donor->name }}</p>
-                                <p class="text-xs text-muted-foreground">
-                                    {{ $response->status === 'confirmed' ? 'Confirmed donor' : 'Responded '.$response->created_at->diffForHumans() }}
-                                </p>
+                        <li class="rounded-xl border border-border p-3">
+                            <div class="flex items-center justify-between gap-3">
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-medium">{{ $response->donor->name }}</p>
+                                    <p class="text-xs text-muted-foreground">
+                                        {{ $response->status === 'confirmed' ? 'Confirmed donor' : 'Responded '.$response->created_at->diffForHumans() }}
+                                    </p>
+                                </div>
+                                @can('confirm', $response)
+                                    <form method="POST" action="{{ route('requests.responses.confirm', [$bloodRequest, $response]) }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        <x-button type="submit" variant="outline" size="sm">Confirm</x-button>
+                                    </form>
+                                @else
+                                    @if ($response->status === 'confirmed')
+                                        <span class="inline-flex items-center rounded-full bg-success/15 px-2.5 py-0.5 text-[11px] font-medium text-success">Confirmed</span>
+                                    @endif
+                                @endcan
                             </div>
-                            @can('confirm', $response)
-                                <form method="POST" action="{{ route('requests.responses.confirm', [$bloodRequest, $response]) }}">
-                                    @csrf
-                                    @method('PATCH')
-                                    <x-button type="submit" variant="outline" size="sm">Confirm</x-button>
-                                </form>
-                            @else
-                                @if ($response->status === 'confirmed')
-                                    <span class="inline-flex items-center rounded-full bg-success/15 px-2.5 py-0.5 text-[11px] font-medium text-success">Confirmed</span>
-                                @endif
-                            @endcan
+
+                            {{-- Post-fulfillment mutual confirmation: both sides independently
+                                 attest the donation actually happened before it counts toward
+                                 donation_history / trust_score. --}}
+                            @if ($response->status === 'confirmed' && $bloodRequest->status === 'fulfilled')
+                                @php
+                                    $viewerIsRequester = auth()->id() === $bloodRequest->requester_id;
+                                    $viewerIsThisDonor = auth()->id() === $response->donor_id;
+                                    $viewerHasConfirmed = $viewerIsRequester ? $response->requester_confirmed_at : $response->donor_confirmed_at;
+                                @endphp
+                                <div class="mt-2.5 flex items-center justify-between gap-3 border-t border-border pt-2.5">
+                                    @if ($response->isMutuallyConfirmed())
+                                        <p class="flex items-center gap-1 text-xs font-medium text-success">
+                                            <x-icon name="check" class="size-3.5" /> Donation confirmed by both sides
+                                        </p>
+                                    @elseif ($viewerIsRequester || $viewerIsThisDonor)
+                                        <p class="text-xs text-muted-foreground">
+                                            @if ($viewerHasConfirmed)
+                                                You confirmed — waiting on the {{ $viewerIsRequester ? 'donor' : 'requester' }}.
+                                            @else
+                                                Did this donation happen?
+                                            @endif
+                                        </p>
+                                        @can('confirmDonation', $response)
+                                            <form method="POST" action="{{ route('requests.responses.confirm-donation', [$bloodRequest, $response]) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <x-button type="submit" size="sm">Confirm donation</x-button>
+                                            </form>
+                                        @endcan
+                                    @endif
+                                </div>
+                            @endif
                         </li>
                     @endforeach
                 </ul>
@@ -127,6 +166,36 @@
                     · {{ $bloodRequest->requester->hall ?? $bloodRequest->requester->department }}
                 @endif
             </p>
+
+            @can('report', $bloodRequest)
+                <div class="mt-4 border-t border-border pt-4" x-data="{ open: false }">
+                    <button type="button" @click="open = !open" class="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-destructive">
+                        <x-icon name="flag" class="size-3.5" /> Report this request
+                    </button>
+
+                    <form method="POST" action="{{ route('requests.report', $bloodRequest) }}" x-show="open" x-cloak class="mt-3 space-y-3">
+                        @csrf
+                        <div class="space-y-1.5">
+                            <x-input-label value="Reason" />
+                            <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                                @foreach ($reportReasons as $value => $label)
+                                    <label class="flex cursor-pointer items-center justify-center rounded-lg border border-border px-2 py-2 text-xs has-[:checked]:border-primary has-[:checked]:bg-accent has-[:checked]:font-medium has-[:checked]:text-accent-foreground">
+                                        <input type="radio" name="reason" value="{{ $value }}" class="sr-only" required>
+                                        {{ $label }}
+                                    </label>
+                                @endforeach
+                            </div>
+                            <x-input-error :messages="$errors->get('reason')" />
+                        </div>
+                        <div class="space-y-1.5">
+                            <x-input-label for="details" value="Details (optional)" />
+                            <textarea id="details" name="details" rows="2" class="block w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"></textarea>
+                            <x-input-error :messages="$errors->get('details')" />
+                        </div>
+                        <x-button type="submit" variant="outline" size="sm">Submit report</x-button>
+                    </form>
+                </div>
+            @endcan
         </div>
     </div>
 </x-app-layout>

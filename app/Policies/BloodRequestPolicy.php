@@ -48,4 +48,19 @@ class BloodRequestPolicy
             && in_array($profile->blood_group, $bloodRequest->compatibleDonorBloodGroups(), true)
             && ! $bloodRequest->responses()->where('donor_id', $user->id)->exists();
     }
+
+    /** Verifiers approve/reject requests that haven't already been ruled on. */
+    public function verify(User $user, BloodRequest $bloodRequest): bool
+    {
+        return $user->isVerifier()
+            && ! $bloodRequest->is_verified
+            && $bloodRequest->rejected_at === null
+            && $bloodRequest->status !== 'expired';
+    }
+
+    /** Anyone can report a request once — repeat reports of the same one are rejected, not silently ignored. */
+    public function report(User $user, BloodRequest $bloodRequest): bool
+    {
+        return ! $bloodRequest->reports()->where('reporter_id', $user->id)->exists();
+    }
 }

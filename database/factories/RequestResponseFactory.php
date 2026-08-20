@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\BloodRequest;
 use App\Models\RequestResponse;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,7 +20,14 @@ class RequestResponseFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'request_id' => BloodRequest::factory(),
+            'donor_id' => User::factory(),
+            'status' => 'responded',
         ];
+    }
+
+    public function confirmed(): static
+    {
+        return $this->state(['status' => 'confirmed']);
     }
 }

@@ -62,6 +62,10 @@
     h3 {
         letter-spacing: -0.02em;
     }
+
+    [x-cloak] {
+        display: none !important;
+    }
 }
 
 @layer components {

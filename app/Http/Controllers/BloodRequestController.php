@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreBloodRequestRequest;
 use App\Models\BloodRequest;
+use App\Models\Report;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -53,7 +54,10 @@ class BloodRequestController extends Controller
 
         $request->load(['requester', 'verifier', 'responses.donor']);
 
-        return view('requests.show', ['bloodRequest' => $request]);
+        return view('requests.show', [
+            'bloodRequest' => $request,
+            'reportReasons' => Report::REASONS,
+        ]);
     }
 
     /**
