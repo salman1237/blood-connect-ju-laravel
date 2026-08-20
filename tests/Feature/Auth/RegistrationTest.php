@@ -24,6 +24,7 @@ class RegistrationTest extends TestCase
             'password' => 'password',
             'password_confirmation' => 'password',
             'role' => 'student',
+            'gender' => 'male',
         ]);
 
         $this->assertAuthenticated();
@@ -40,6 +41,7 @@ class RegistrationTest extends TestCase
             'password' => 'password',
             'password_confirmation' => 'password',
             'role' => 'student',
+            'gender' => 'male',
         ]);
 
         $this->assertDatabaseHas('users', ['email' => 'someone@gmail.com']);
@@ -53,13 +55,29 @@ class RegistrationTest extends TestCase
             'password' => 'password',
             'password_confirmation' => 'password',
             'role' => 'admin',
+            'gender' => 'male',
         ]);
 
         $response->assertSessionHasErrors('role');
         $this->assertDatabaseMissing('users', ['email' => 'test@example.com']);
     }
 
-    public function test_role_is_saved_from_the_registration_form(): void
+    public function test_registration_requires_a_valid_gender(): void
+    {
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'role' => 'student',
+            'gender' => 'unspecified',
+        ]);
+
+        $response->assertSessionHasErrors('gender');
+        $this->assertDatabaseMissing('users', ['email' => 'test@example.com']);
+    }
+
+    public function test_role_and_gender_are_saved_from_the_registration_form(): void
     {
         $this->post('/register', [
             'name' => 'Staff Member',
@@ -67,8 +85,9 @@ class RegistrationTest extends TestCase
             'password' => 'password',
             'password_confirmation' => 'password',
             'role' => 'staff',
+            'gender' => 'female',
         ]);
 
-        $this->assertDatabaseHas('users', ['email' => 'staff@example.com', 'role' => 'staff']);
+        $this->assertDatabaseHas('users', ['email' => 'staff@example.com', 'role' => 'staff', 'gender' => 'female']);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Requests\UpdateDonorProfileRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +23,7 @@ class ProfileController extends Controller
             'halls' => config('juniv.halls'),
             'departments' => config('juniv.departments'),
             'bloodGroups' => ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+            'batches' => User::batchOptions(),
             'donationHistory' => $request->user()->donationHistory()->with('bloodRequest')->latest('confirmed_at')->get(),
             'badges' => $request->user()->badges,
         ]);

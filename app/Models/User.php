@@ -26,12 +26,16 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'role',
+        'gender',
         'is_active',
         'locale',
         'email_notifications_enabled',
         'hall',
         'department',
+        'batch',
         'phone',
+        'phone_has_whatsapp',
+        'whatsapp_number',
         'google_id',
     ];
 
@@ -57,6 +61,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'is_active' => 'boolean',
             'email_notifications_enabled' => 'boolean',
+            'phone_has_whatsapp' => 'boolean',
         ];
     }
 
@@ -103,12 +108,32 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function hasCompletedOnboarding(): bool
     {
-        // Only students live in halls — staff/faculty only need a department.
+        // Only students live in halls or have a batch — staff/faculty only
+        // need a department.
         $hallSatisfied = $this->role !== 'student' || $this->hall !== null;
+        $batchSatisfied = $this->role !== 'student' || $this->batch !== null;
 
         return $hallSatisfied
+            && $batchSatisfied
             && $this->department !== null
+            && $this->gender !== null
             && $this->donorProfile !== null;
+    }
+
+    /** Self-service role changes are limited to the three donor-tier roles. */
+    public function canSelfServiceRole(): bool
+    {
+        return in_array($this->role, ['student', 'staff', 'faculty'], true);
+    }
+
+    /** Academic-year batches from 1970 to the present, newest first. */
+    public static function batchOptions(): array
+    {
+        $currentYear = (int) now()->format('Y');
+
+        return collect(range($currentYear, 1970))
+            ->map(fn (int $year) => "{$year}-".substr((string) ($year + 1), 2, 2))
+            ->all();
     }
 
     /**
@@ -118,11 +143,26 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function updateDonorProfile(array $validated): void
     {
-        $this->update([
+        $hasWhatsapp = (bool) ($validated['phone_has_whatsapp'] ?? true);
+
+        $updates = [
             'department' => $validated['department'],
             'hall' => $validated['hall'] ?? null,
+            'batch' => $validated['batch'] ?? null,
             'phone' => $validated['phone'] ?? null,
-        ]);
+            'gender' => $validated['gender'],
+            'phone_has_whatsapp' => $hasWhatsapp,
+            'whatsapp_number' => $hasWhatsapp ? null : ($validated['whatsapp_number'] ?? null),
+        ];
+
+        // Never let a verifier/admin accidentally demote themselves just by
+        // submitting this form — role is only self-service for the three
+        // donor-tier roles, and the field is only ever rendered for them.
+        if ($this->canSelfServiceRole() && isset($validated['role'])) {
+            $updates['role'] = $validated['role'];
+        }
+
+        $this->update($updates);
 
         $this->donorProfile()->updateOrCreate(
             ['user_id' => $this->id],

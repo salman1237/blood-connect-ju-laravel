@@ -40,6 +40,8 @@ class OnboardingTest extends TestCase
 
         $response = $this->actingAs($user)->post('/onboarding', [
             'blood_group' => 'O-',
+            'role' => 'student',
+            'gender' => 'male',
             'department' => 'Computer Science and Engineering',
             'is_available' => '1',
         ]);
@@ -53,6 +55,8 @@ class OnboardingTest extends TestCase
 
         $response = $this->actingAs($user)->post('/onboarding', [
             'blood_group' => 'O-',
+            'role' => 'staff',
+            'gender' => 'male',
             'department' => 'Computer Science and Engineering',
             'is_available' => '1',
         ]);
@@ -67,7 +71,10 @@ class OnboardingTest extends TestCase
 
         $this->actingAs($user)->post('/onboarding', [
             'blood_group' => 'AB+',
+            'role' => 'student',
+            'gender' => 'female',
             'hall' => 'Rokeya Hall',
+            'batch' => '2020-21',
             'department' => 'Statistics and Data Science',
             'phone' => '01712345678',
             'is_available' => '1',
@@ -92,7 +99,10 @@ class OnboardingTest extends TestCase
 
         $response = $this->actingAs($user)->post('/onboarding', [
             'blood_group' => 'O-',
+            'role' => 'student',
+            'gender' => 'male',
             'hall' => 'Rokeya Hall',
+            'batch' => '2020-21',
             'department' => 'Institute of Business Administration',
             'is_available' => '1',
         ]);
@@ -106,7 +116,10 @@ class OnboardingTest extends TestCase
 
         $response = $this->actingAs($user)->post('/onboarding', [
             'blood_group' => 'O-',
+            'role' => 'student',
+            'gender' => 'male',
             'hall' => 'Not A Real Hall',
+            'batch' => '2020-21',
             'department' => 'Not A Real Department',
             'is_available' => '1',
         ]);

@@ -58,6 +58,19 @@
                 <x-input-error :messages="$errors->get('role')" />
             </div>
 
+            <div class="space-y-1.5">
+                <x-input-label value="Gender" />
+                <div class="grid grid-cols-3 gap-2">
+                    @foreach (['male' => 'Male', 'female' => 'Female', 'other' => 'Other'] as $value => $label)
+                        <label class="flex cursor-pointer items-center justify-center rounded-lg border border-border px-2 py-2.5 text-sm has-[:checked]:border-primary has-[:checked]:bg-accent has-[:checked]:font-medium has-[:checked]:text-accent-foreground">
+                            <input type="radio" name="gender" value="{{ $value }}" class="sr-only" {{ old('gender') === $value ? 'checked' : '' }}>
+                            {{ $label }}
+                        </label>
+                    @endforeach
+                </div>
+                <x-input-error :messages="$errors->get('gender')" />
+            </div>
+
             <x-button type="submit" size="lg" class="w-full">Create account</x-button>
 
             <p class="text-center text-xs text-muted-foreground">

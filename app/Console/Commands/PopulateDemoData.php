@@ -128,6 +128,7 @@ class PopulateDemoData extends Command
         $password = Hash::make('password');
         $halls = config('juniv.halls');
         $departments = collect(config('juniv.departments'))->flatten()->all();
+        $batches = User::batchOptions();
 
         $donors = collect();
 
@@ -142,9 +143,12 @@ class PopulateDemoData extends Command
                 'email' => strtolower("{$firstName}.{$lastName}.demo{$i}@example.com"),
                 'password' => $password,
                 'role' => $role,
+                'gender' => $this->randomElement(['male', 'female', 'other']),
                 'hall' => $isStudent ? $this->randomElement($halls) : null,
                 'department' => $this->randomElement($departments),
+                'batch' => $isStudent ? $this->randomElement($batches) : null,
                 'phone' => '01'.$this->randomDigits(9),
+                'phone_has_whatsapp' => $this->randomBool(80),
                 'email_verified_at' => now(),
                 'is_active' => true,
                 'email_notifications_enabled' => true,
@@ -187,8 +191,8 @@ class PopulateDemoData extends Command
         $password = Hash::make('password');
 
         return collect([
-            ['name' => 'Farhana Islam', 'email' => 'farhana.demo.verifier@example.com', 'department' => 'Physics'],
-            ['name' => 'Kamrul Hasan', 'email' => 'kamrul.demo.verifier@example.com', 'department' => 'Economics'],
+            ['name' => 'Farhana Islam', 'email' => 'farhana.demo.verifier@example.com', 'department' => 'Physics', 'gender' => 'female'],
+            ['name' => 'Kamrul Hasan', 'email' => 'kamrul.demo.verifier@example.com', 'department' => 'Economics', 'gender' => 'male'],
         ])->map(fn ($data) => User::firstOrCreate(
             ['email' => $data['email']],
             [...$data, 'password' => $password, 'role' => 'verifier', 'email_verified_at' => now(), 'is_active' => true, 'email_notifications_enabled' => true]

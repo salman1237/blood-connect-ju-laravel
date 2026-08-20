@@ -64,6 +64,8 @@ class ProfileTest extends TestCase
 
         $response = $this->actingAs($user)->patch('/profile/donor', [
             'blood_group' => 'AB+',
+            'role' => 'staff',
+            'gender' => 'male',
             'department' => 'Physics',
             'phone' => '01711111111',
             'is_available' => '0',
@@ -86,6 +88,8 @@ class ProfileTest extends TestCase
 
         $this->actingAs($user)->patch('/profile/donor', [
             'blood_group' => 'O-',
+            'role' => 'staff',
+            'gender' => 'male',
             'department' => 'Physics',
             'is_available' => '0',
         ]);

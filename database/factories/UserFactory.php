@@ -36,6 +36,11 @@ class UserFactory extends Factory
             // attribute even though the real row defaults to active.
             'is_active' => true,
             'email_notifications_enabled' => true,
+            // Defaults satisfy hasCompletedOnboarding() out of the box —
+            // batch is harmless on non-student rows since it's only
+            // checked when role === 'student'.
+            'gender' => fake()->randomElement(['male', 'female', 'other']),
+            'batch' => '2020-21',
         ];
     }
 

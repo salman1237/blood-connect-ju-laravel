@@ -1,14 +1,15 @@
 <x-guest-layout>
     <x-slot name="title">Complete Your Profile — Blood Connect JU</x-slot>
 
-    @php $isStudent = auth()->user()->role === 'student'; @endphp
-
     <div x-data="{
-        step: {{ $errors->hasAny(['hall', 'department']) ? 2 : ($errors->hasAny(['is_available', 'last_donation_date']) ? 3 : 1) }},
-        total: 3,
-        titles: ['Your blood group', 'Where you are on campus', 'Your availability'],
+        step: {{ $errors->hasAny(['role', 'gender']) ? 2 : ($errors->hasAny(['hall', 'department', 'batch']) ? 3 : ($errors->hasAny(['is_available', 'last_donation_date']) ? 4 : 1)) }},
+        total: 4,
+        role: '{{ old('role', auth()->user()->role) }}',
+        hasWhatsapp: {{ old('phone_has_whatsapp', '1') === '1' ? 'true' : 'false' }},
+        titles: ['Your blood group', 'About you', 'Where you are on campus', 'Your availability'],
         subtitles: [
             'Donors are matched to requests by compatible blood group.',
+            'Helps us route requests to the right people.',
             'We use this to alert you about nearby requests first.',
             'You can change this any time from your profile.',
         ],
@@ -43,9 +44,38 @@
                     <x-input-error :messages="$errors->get('blood_group')" class="mt-2" />
                 </div>
 
-                {{-- Step 2: hall / department --}}
+                {{-- Step 2: role / gender --}}
                 <div x-show="step === 2" class="space-y-4">
-                    @if ($isStudent)
+                    <div class="space-y-1.5">
+                        <x-input-label value="I am a" />
+                        <div class="grid grid-cols-3 gap-2">
+                            @foreach (['student' => 'Student', 'staff' => 'Staff', 'faculty' => 'Teacher'] as $value => $label)
+                                <label class="flex cursor-pointer items-center justify-center rounded-lg border border-border px-2 py-3 text-sm has-[:checked]:border-primary has-[:checked]:bg-accent has-[:checked]:font-medium has-[:checked]:text-accent-foreground">
+                                    <input type="radio" name="role" value="{{ $value }}" x-model="role" class="sr-only" required>
+                                    {{ $label }}
+                                </label>
+                            @endforeach
+                        </div>
+                        <x-input-error :messages="$errors->get('role')" />
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <x-input-label value="Gender" />
+                        <div class="grid grid-cols-3 gap-2">
+                            @foreach (['male' => 'Male', 'female' => 'Female', 'other' => 'Other'] as $value => $label)
+                                <label class="flex cursor-pointer items-center justify-center rounded-lg border border-border px-2 py-3 text-sm has-[:checked]:border-primary has-[:checked]:bg-accent has-[:checked]:font-medium has-[:checked]:text-accent-foreground">
+                                    <input type="radio" name="gender" value="{{ $value }}" class="sr-only" {{ old('gender', auth()->user()->gender) === $value ? 'checked' : '' }} required>
+                                    {{ $label }}
+                                </label>
+                            @endforeach
+                        </div>
+                        <x-input-error :messages="$errors->get('gender')" />
+                    </div>
+                </div>
+
+                {{-- Step 3: hall / batch / department / phone --}}
+                <div x-show="step === 3" class="space-y-4">
+                    <div x-show="role === 'student'" class="space-y-4">
                         <div class="space-y-1.5">
                             <x-input-label for="hall" value="Hall" />
                             <select id="hall" name="hall" class="block w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
@@ -56,7 +86,18 @@
                             </select>
                             <x-input-error :messages="$errors->get('hall')" />
                         </div>
-                    @endif
+
+                        <div class="space-y-1.5">
+                            <x-input-label for="batch" value="Batch" />
+                            <select id="batch" name="batch" class="block w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
+                                <option value="">Select your batch</option>
+                                @foreach ($batches as $batch)
+                                    <option value="{{ $batch }}" {{ old('batch') === $batch ? 'selected' : '' }}>{{ $batch }}</option>
+                                @endforeach
+                            </select>
+                            <x-input-error :messages="$errors->get('batch')" />
+                        </div>
+                    </div>
 
                     <div class="space-y-1.5">
                         <x-input-label for="department" value="Department" />
@@ -78,10 +119,22 @@
                         <x-text-input id="phone" type="tel" name="phone" placeholder="01XXXXXXXXX" :value="old('phone')" />
                         <x-input-error :messages="$errors->get('phone')" />
                     </div>
+
+                    <label class="flex items-center justify-between rounded-xl border border-border p-4">
+                        <span class="text-sm font-medium">This number has WhatsApp</span>
+                        <input type="hidden" name="phone_has_whatsapp" value="0">
+                        <input type="checkbox" name="phone_has_whatsapp" value="1" x-model="hasWhatsapp" class="size-5 rounded border-border text-primary focus:ring-primary">
+                    </label>
+
+                    <div class="space-y-1.5" x-show="!hasWhatsapp">
+                        <x-input-label for="whatsapp_number" value="WhatsApp number (optional)" />
+                        <x-text-input id="whatsapp_number" type="tel" name="whatsapp_number" placeholder="01XXXXXXXXX" :value="old('whatsapp_number')" />
+                        <x-input-error :messages="$errors->get('whatsapp_number')" />
+                    </div>
                 </div>
 
-                {{-- Step 3: availability --}}
-                <div x-show="step === 3" class="space-y-4">
+                {{-- Step 4: availability --}}
+                <div x-show="step === 4" class="space-y-4">
                     <label class="flex items-center justify-between rounded-xl border border-border p-4">
                         <div>
                             <p class="text-sm font-medium">Available to donate</p>
