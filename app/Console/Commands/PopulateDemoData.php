@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Hash;
  */
 class PopulateDemoData extends Command
 {
-    protected $signature = 'demo:populate {--donors=30} {--requests=500}';
+    protected $signature = 'demo:populate {--donors=30} {--requests=500} {--open-percent=15} {--fulfilled-percent=55}';
 
     protected $description = 'Generate realistic demo accounts and blood requests for a populated client-facing demo';
 
@@ -87,23 +87,29 @@ class PopulateDemoData extends Command
     {
         $donorCount = (int) $this->option('donors');
         $requestCount = (int) $this->option('requests');
+        $openPercent = (int) $this->option('open-percent');
+        $fulfilledPercent = (int) $this->option('fulfilled-percent');
 
         Model::unguard();
 
         [$donors, $verifiers] = Model::withoutEvents(function () use ($donorCount) {
-            return [$this->createDonors($donorCount), $this->findOrCreateVerifiers()];
+            // --donors=0 tops up more requests against the existing demo
+            // pool instead of creating a fresh batch of accounts.
+            $donors = $donorCount > 0 ? $this->createDonors($donorCount) : $this->existingDemoDonors();
+
+            return [$donors, $this->findOrCreateVerifiers()];
         });
 
-        $this->info("Created {$donors->count()} demo accounts.");
+        $this->info("Using {$donors->count()} demo accounts.");
 
         $badges = Badge::all()->keyBy('slug');
 
         $bar = $this->output->createProgressBar($requestCount);
         $bar->start();
 
-        Model::withoutEvents(function () use ($requestCount, $donors, $verifiers, $badges, $bar) {
+        Model::withoutEvents(function () use ($requestCount, $donors, $verifiers, $badges, $bar, $openPercent, $fulfilledPercent) {
             for ($i = 0; $i < $requestCount; $i++) {
-                $this->createOneRequest($donors, $verifiers, $badges);
+                $this->createOneRequest($donors, $verifiers, $badges, $openPercent, $fulfilledPercent);
                 $bar->advance();
             }
         });
@@ -158,6 +164,18 @@ class PopulateDemoData extends Command
         return $donors;
     }
 
+    /** Used by --donors=0 top-up runs — reload the pool created by an earlier run. */
+    private function existingDemoDonors(): Collection
+    {
+        return User::where('email', 'like', '%@example.com')
+            ->where('email', 'not like', '%.verifier@example.com')
+            ->with('donorProfile')
+            ->get()
+            ->filter(fn ($user) => $user->donorProfile !== null)
+            ->map(fn ($user) => ['user' => $user, 'profile' => $user->donorProfile])
+            ->values();
+    }
+
     /** Reuses real verifiers if this has already been run once; creates two otherwise. */
     private function findOrCreateVerifiers(): Collection
     {
@@ -177,19 +195,17 @@ class PopulateDemoData extends Command
         ));
     }
 
-    private function createOneRequest(Collection $donors, Collection $verifiers, Collection $badges): void
+    private function createOneRequest(Collection $donors, Collection $verifiers, Collection $badges, int $openPercent, int $fulfilledPercent): void
     {
         $hospital = $this->randomElement(self::HOSPITALS);
         $bloodGroup = $this->randomElement(self::BLOOD_GROUPS);
         $requesterEntry = $donors->random();
         $requester = $requesterEntry['user'];
 
-        // Weighted toward a mature, successful track record rather than a
-        // pile of simultaneous live emergencies — better story for a demo.
         $statusRoll = random_int(1, 100);
         $status = match (true) {
-            $statusRoll <= 15 => 'open',
-            $statusRoll <= 70 => 'fulfilled',
+            $statusRoll <= $openPercent => 'open',
+            $statusRoll <= $openPercent + $fulfilledPercent => 'fulfilled',
             default => 'expired',
         };
 

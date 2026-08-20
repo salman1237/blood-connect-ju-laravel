@@ -22,18 +22,22 @@
                 ['route' => 'leaderboard', 'label' => __('nav.ranks'), 'icon' => 'trophy'],
                 ['route' => 'profile.edit', 'label' => __('nav.profile'), 'icon' => 'user'],
             ];
+            // 'visible' gates each link by permission, not just whether the
+            // route happens to be registered — Route::has() alone doesn't
+            // know whether *this* user is allowed there.
             $secondaryNav = [
-                ['route' => 'settings.edit', 'label' => __('nav.settings'), 'icon' => 'settings'],
-                ['route' => 'verify.queue', 'label' => __('nav.verifier_queue'), 'icon' => 'shield-check'],
-                ['route' => 'admin.dashboard', 'label' => __('nav.admin_dashboard'), 'icon' => 'bar-chart'],
+                ['route' => 'settings.edit', 'label' => __('nav.settings'), 'icon' => 'settings', 'visible' => true],
+                ['route' => 'verify.queue', 'label' => __('nav.verifier_queue'), 'icon' => 'shield-check', 'visible' => auth()->user()->isVerifier()],
+                ['route' => 'admin.dashboard', 'label' => __('nav.admin_dashboard'), 'icon' => 'bar-chart', 'visible' => auth()->user()->isAdmin()],
             ];
+            $visibleSecondaryNav = collect($secondaryNav)->filter(fn ($item) => $item['visible'] && Route::has($item['route']));
             $unreadNotificationsCount = Route::has('notifications.index') ? auth()->user()->unreadNotifications()->count() : 0;
         @endphp
 
         <aside class="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar p-4 lg:flex">
-            <x-logo class="px-2 py-2" />
+            <x-logo class="shrink-0 px-2 py-2" />
 
-            <nav class="mt-6 flex flex-1 flex-col gap-1">
+            <nav class="mt-6 flex flex-1 flex-col gap-1 overflow-y-auto">
                 @foreach ($primaryNav as $item)
                     @if (Route::has($item['route']))
                         <a href="{{ route($item['route']) }}"
@@ -49,17 +53,15 @@
 
                 <div class="my-3 border-t border-sidebar-border"></div>
 
-                @foreach ($secondaryNav as $item)
-                    @if (Route::has($item['route']))
-                        <a href="{{ route($item['route']) }}"
-                           class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors {{ request()->routeIs($item['route']) ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/60' }}">
-                            <x-icon :name="$item['icon']" class="size-4" />
-                            {{ $item['label'] }}
-                        </a>
-                    @endif
+                @foreach ($visibleSecondaryNav as $item)
+                    <a href="{{ route($item['route']) }}"
+                       class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors {{ request()->routeIs($item['route']) ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/60' }}">
+                        <x-icon :name="$item['icon']" class="size-4" />
+                        {{ $item['label'] }}
+                    </a>
                 @endforeach
 
-                <div class="mt-auto space-y-3">
+                <div class="mt-auto shrink-0 space-y-3 pt-3">
                     @if (Route::has('requests.create'))
                         <a href="{{ route('requests.create') }}"
                            class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90">
@@ -87,9 +89,9 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <x-language-toggle />
-                        <span class="hidden size-9 items-center justify-center rounded-full bg-secondary text-xs font-semibold sm:inline-flex">
-                            {{ collect(explode(' ', auth()->user()->name))->map(fn ($part) => mb_substr($part, 0, 1))->take(2)->implode('') }}
-                        </span>
+                        <a href="{{ route('profile.edit') }}" class="shrink-0">
+                            <x-user-avatar :user="auth()->user()" class="hidden size-9 sm:flex" />
+                        </a>
                     </div>
                 </div>
             </header>
@@ -99,23 +101,47 @@
             </main>
         </div>
 
-        <nav class="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur lg:hidden">
-            <div class="mx-auto flex max-w-lg items-stretch justify-between px-2 py-1.5">
-                @foreach ($primaryNav as $item)
-                    @if (Route::has($item['route']))
-                        <a href="{{ route($item['route']) }}"
-                           class="relative flex flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-[10px] font-medium transition-colors {{ request()->routeIs($item['route']) ? 'text-primary' : 'text-muted-foreground' }}">
-                            <span class="relative">
-                                <x-icon :name="$item['icon']" class="size-5" />
-                                @if ($item['route'] === 'notifications.index' && $unreadNotificationsCount > 0)
-                                    <span class="absolute -right-1 -top-1 size-2 rounded-full bg-primary"></span>
-                                @endif
-                            </span>
-                            {{ $item['label'] }}
-                        </a>
-                    @endif
+        <div x-data="{ moreOpen: false }" class="lg:hidden">
+            <nav class="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur">
+                <div class="mx-auto flex max-w-lg items-stretch justify-between px-2 py-1.5">
+                    @foreach ($primaryNav as $item)
+                        @if (Route::has($item['route']))
+                            <a href="{{ route($item['route']) }}"
+                               class="relative flex flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-[10px] font-medium transition-colors {{ request()->routeIs($item['route']) ? 'text-primary' : 'text-muted-foreground' }}">
+                                <span class="relative">
+                                    <x-icon :name="$item['icon']" class="size-5" />
+                                    @if ($item['route'] === 'notifications.index' && $unreadNotificationsCount > 0)
+                                        <span class="absolute -right-1 -top-1 size-2 rounded-full bg-primary"></span>
+                                    @endif
+                                </span>
+                                {{ $item['label'] }}
+                            </a>
+                        @endif
+                    @endforeach
+                    <button type="button" @click="moreOpen = true"
+                            class="flex flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-[10px] font-medium text-muted-foreground">
+                        <x-icon name="more-horizontal" class="size-5" />
+                        More
+                    </button>
+                </div>
+            </nav>
+
+            <div x-show="moreOpen" x-cloak x-transition.opacity @click="moreOpen = false" class="fixed inset-0 z-40 bg-foreground/40"></div>
+            <div x-show="moreOpen" x-cloak x-transition class="fixed inset-x-0 bottom-0 z-50 rounded-t-2xl bg-card p-3 pb-6 shadow-lift">
+                <div class="mb-2 flex justify-center"><span class="h-1 w-10 rounded-full bg-border"></span></div>
+                @foreach ($visibleSecondaryNav as $item)
+                    <a href="{{ route($item['route']) }}" @click="moreOpen = false"
+                       class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-foreground hover:bg-secondary">
+                        <x-icon :name="$item['icon']" class="size-5" /> {{ $item['label'] }}
+                    </a>
                 @endforeach
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium text-destructive hover:bg-secondary">
+                        <x-icon name="x" class="size-5" /> {{ __('nav.sign_out') }}
+                    </button>
+                </form>
             </div>
-        </nav>
+        </div>
     </body>
 </html>
