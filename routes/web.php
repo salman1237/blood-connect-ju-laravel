@@ -3,6 +3,7 @@
 use App\Http\Controllers\BloodRequestController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DonorSearchController;
+use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -37,6 +38,7 @@ Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
     Route::patch('/requests/{request}/responses/{response}/confirm-donation', [RequestResponseController::class, 'confirmDonation'])->name('requests.responses.confirm-donation');
 
     Route::get('/donors', DonorSearchController::class)->name('donors.index');
+    Route::get('/leaderboard', LeaderboardController::class)->name('leaderboard');
 });
 
 // Verifier — CR / hall provost office / medical center staff. Not gated by

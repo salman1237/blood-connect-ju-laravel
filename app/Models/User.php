@@ -5,6 +5,8 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -56,6 +58,17 @@ class User extends Authenticatable implements MustVerifyEmail
     public function donorProfile(): HasOne
     {
         return $this->hasOne(DonorProfile::class);
+    }
+
+    public function donationHistory(): HasMany
+    {
+        return $this->hasMany(DonationHistory::class, 'donor_id');
+    }
+
+    public function badges(): BelongsToMany
+    {
+        return $this->belongsToMany(Badge::class, 'donor_badges', 'donor_id', 'badge_id')
+            ->withPivot('earned_at');
     }
 
     public function isAdmin(): bool

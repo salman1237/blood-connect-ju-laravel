@@ -22,6 +22,8 @@ class ProfileController extends Controller
             'halls' => config('juniv.halls'),
             'departments' => config('juniv.departments'),
             'bloodGroups' => ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+            'donationHistory' => $request->user()->donationHistory()->with('bloodRequest')->latest('confirmed_at')->get(),
+            'badges' => $request->user()->badges,
         ]);
     }
 

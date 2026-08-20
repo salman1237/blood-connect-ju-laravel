@@ -15,6 +15,9 @@ class DonorProfile extends Model
     /** Donors must wait this many days between donations. */
     const ELIGIBILITY_WINDOW_DAYS = 120;
 
+    /** Rh-negative types — rare in the Bangladeshi population (~3-5%). */
+    const RARE_BLOOD_GROUPS = ['A-', 'B-', 'AB-', 'O-'];
+
     protected $fillable = [
         'user_id',
         'blood_group',

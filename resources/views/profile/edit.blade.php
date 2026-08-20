@@ -5,6 +5,10 @@
         </div>
 
         <div class="surface-panel p-5 sm:p-6">
+            @include('profile.partials.donation-history')
+        </div>
+
+        <div class="surface-panel p-5 sm:p-6">
             @include('profile.partials.update-profile-information-form')
         </div>
 
