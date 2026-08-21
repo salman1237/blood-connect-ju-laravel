@@ -1,8 +1,8 @@
 @props(['title' => null, 'subtitle' => null])
 
 <div class="min-h-screen bg-background">
-    <header class="flex items-center justify-between px-4 py-4 sm:px-8">
-        <x-logo />
+    <header class="flex items-center justify-between gap-2 px-4 py-4 sm:px-8">
+        <x-logo compact />
         <x-language-toggle />
     </header>
     <main class="mx-auto w-full max-w-md px-4 pb-16 pt-4">

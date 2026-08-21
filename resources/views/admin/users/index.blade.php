@@ -7,7 +7,7 @@
 
     <form method="GET" action="{{ route('admin.users.index') }}" class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <x-text-input type="search" name="search" placeholder="Search by name or email" :value="$search" class="sm:max-w-xs" />
-        <div class="flex gap-1.5 overflow-x-auto pb-1">
+        <x-scroll-fade class="flex gap-1.5 overflow-x-auto pb-1">
             <a href="{{ route('admin.users.index', ['search' => $search]) }}"
                class="shrink-0 rounded-full border px-3 py-2 text-xs font-medium transition-colors {{ $selectedRole === '' ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground' }}">
                 All roles
@@ -18,7 +18,7 @@
                     {{ $role }}
                 </a>
             @endforeach
-        </div>
+        </x-scroll-fade>
         <x-button type="submit" size="sm" variant="outline">Search</x-button>
     </form>
 

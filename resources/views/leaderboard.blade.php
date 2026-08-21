@@ -1,4 +1,4 @@
-<x-app-layout title="Leaderboard" subtitle="Confirmed donations by hall &amp; department">
+<x-app-layout title="Leaderboard" subtitle="Confirmed donations by hall & department">
     @if ($rankings->isEmpty())
         <div class="surface-panel flex flex-col items-center px-6 py-14 text-center">
             <span class="flex size-14 items-center justify-center rounded-2xl bg-surface text-muted-foreground">

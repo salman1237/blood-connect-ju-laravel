@@ -6,7 +6,7 @@
             <x-text-input type="search" name="search" placeholder="Search donors by name" :value="$search" />
         </form>
 
-        <div class="flex gap-1.5 overflow-x-auto pb-1">
+        <x-scroll-fade class="flex gap-1.5 overflow-x-auto pb-1">
             <a href="{{ route('donors.index', ['hall' => $selectedHall, 'search' => $search]) }}"
                class="shrink-0 rounded-full border px-3 py-2 text-xs font-medium transition-colors {{ $selectedBloodGroup === '' ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground' }}">
                 All
@@ -17,8 +17,8 @@
                     {{ $group }}
                 </a>
             @endforeach
-        </div>
-        <div class="flex gap-1.5 overflow-x-auto pb-1">
+        </x-scroll-fade>
+        <x-scroll-fade class="flex gap-1.5 overflow-x-auto pb-1">
             <a href="{{ route('donors.index', ['blood_group' => $selectedBloodGroup, 'search' => $search]) }}"
                class="shrink-0 rounded-full border px-3 py-2 text-xs transition-colors {{ $selectedHall === '' ? 'border-foreground bg-secondary font-medium' : 'border-border bg-card text-muted-foreground' }}">
                 All halls
@@ -29,7 +29,7 @@
                     {{ $hall }}
                 </a>
             @endforeach
-        </div>
+        </x-scroll-fade>
     </div>
 
     @if ($donors->isEmpty())

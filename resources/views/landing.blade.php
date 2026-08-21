@@ -3,9 +3,9 @@
 
     <div class="min-h-screen bg-background">
         <header class="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
-            <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-                <x-logo />
-                <div class="flex items-center gap-2">
+            <div class="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3">
+                <x-logo compact />
+                <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
                     <x-language-toggle />
                     <x-button :href="route('login')" variant="ghost" size="sm" class="hidden sm:inline-flex">{{ __('common.login') }}</x-button>
                     <x-button :href="route('register')" size="sm">{{ __('common.sign_up') }}</x-button>
@@ -30,16 +30,22 @@
                             <x-button :href="route('register')" size="lg">{{ __('landing.cta_signup') }}</x-button>
                             <x-button :href="route('login')" size="lg" variant="outline">{{ __('landing.cta_login') }}</x-button>
                         </div>
-                        <dl class="mt-10 grid grid-cols-3 gap-4 border-t border-border pt-6">
-                            @foreach ([
+                        @php
+                            $stats = [
                                 ['k' => __('landing.stat_fulfilled'), 'v' => number_format($fulfilledCount)],
                                 ['k' => __('landing.stat_response'), 'v' => $avgResponseMinutes === null ? '—' : ($avgResponseMinutes < 60 ? round($avgResponseMinutes).' min' : round($avgResponseMinutes / 60, 1).' hr')],
                                 ['k' => __('landing.stat_halls'), 'v' => number_format($hallsAndDepartmentsCount)],
-                            ] as $stat)
-                                <div>
-                                    <dt class="text-xs text-muted-foreground">{{ $stat['k'] }}</dt>
-                                    <dd class="text-2xl font-semibold tabular-nums">{{ $stat['v'] }}</dd>
-                                </div>
+                            ];
+                        @endphp
+                        {{-- Labels and numbers are two separate grid rows (not one div per
+                             stat) so a label that wraps to two lines never pushes its own
+                             number out of alignment with its neighbors. --}}
+                        <dl class="mt-10 grid grid-cols-3 gap-x-4 gap-y-1.5 border-t border-border pt-6">
+                            @foreach ($stats as $stat)
+                                <dt class="self-end text-xs text-muted-foreground">{{ $stat['k'] }}</dt>
+                            @endforeach
+                            @foreach ($stats as $stat)
+                                <dd class="text-2xl font-semibold tabular-nums">{{ $stat['v'] }}</dd>
                             @endforeach
                         </dl>
                     </div>

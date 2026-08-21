@@ -6,7 +6,11 @@
 @props(['variant' => 'primary', 'size' => 'default', 'href' => null, 'type' => 'button'])
 
 @php
-    $base = 'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50';
+    // active:scale gives immediate tactile feedback on tap — hover-only
+    // states (bg/opacity changes) don't fire on touch devices, so this is
+    // the one cue that actually reaches mobile, which is most of this app's
+    // traffic. duration-100 keeps the press feel snappy rather than mushy.
+    $base = 'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition duration-100 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50';
 
     $variants = [
         'primary' => 'bg-primary text-primary-foreground hover:opacity-90',

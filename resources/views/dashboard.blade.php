@@ -28,7 +28,7 @@
     </x-button>
 
     <div class="mb-4 space-y-3">
-        <div class="flex gap-1.5 overflow-x-auto pb-1">
+        <x-scroll-fade class="flex gap-1.5 overflow-x-auto pb-1">
             <a href="{{ route('dashboard', ['hall' => $selectedHall]) }}"
                class="shrink-0 rounded-full border px-3 py-2 text-xs font-medium transition-colors {{ $selectedBloodGroup === '' ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground' }}">
                 All
@@ -39,8 +39,8 @@
                     {{ $group }}
                 </a>
             @endforeach
-        </div>
-        <div class="flex gap-1.5 overflow-x-auto pb-1">
+        </x-scroll-fade>
+        <x-scroll-fade class="flex gap-1.5 overflow-x-auto pb-1">
             <a href="{{ route('dashboard', ['blood_group' => $selectedBloodGroup]) }}"
                class="shrink-0 rounded-full border px-3 py-2 text-xs transition-colors {{ $selectedHall === '' ? 'border-foreground bg-secondary font-medium' : 'border-border bg-card text-muted-foreground' }}">
                 All halls
@@ -51,7 +51,7 @@
                     {{ $hall }}
                 </a>
             @endforeach
-        </div>
+        </x-scroll-fade>
     </div>
 
     @if ($requests->isEmpty())
