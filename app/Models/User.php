@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -27,6 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'role',
         'gender',
+        'date_of_birth',
         'is_active',
         'locale',
         'email_notifications_enabled',
@@ -63,7 +65,49 @@ class User extends Authenticatable implements MustVerifyEmail
             'is_active' => 'boolean',
             'email_notifications_enabled' => 'boolean',
             'phone_has_whatsapp' => 'boolean',
+            'date_of_birth' => 'date',
         ];
+    }
+
+    /** Whole years since date_of_birth — null if it was never set. */
+    protected function age(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->date_of_birth?->age,
+        );
+    }
+
+    /**
+     * A clickable wa.me link built from whichever number the user has
+     * actually marked as their WhatsApp number (the main phone, unless
+     * they said it doesn't have WhatsApp, in which case the separate
+     * alternate number) — null if neither is set. wa.me needs the number in
+     * plain international digits with no leading "+" or "0", so a local
+     * "01XXXXXXXXX" gets its leading 0 swapped for the BD country code.
+     */
+    protected function whatsappUrl(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $number = $this->phone_has_whatsapp ? $this->phone : $this->whatsapp_number;
+
+                if (! $number) {
+                    return null;
+                }
+
+                $digits = preg_replace('/\D+/', '', $number);
+
+                if (! str_starts_with($digits, '880')) {
+                    $digits = '880'.ltrim($digits, '0');
+                }
+
+                if (strlen($digits) < 12) {
+                    return null;
+                }
+
+                return "https://wa.me/{$digits}";
+            },
+        );
     }
 
     public function donorProfile(): HasOne
@@ -152,6 +196,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'batch' => $validated['batch'] ?? null,
             'phone' => $validated['phone'] ?? null,
             'gender' => $validated['gender'],
+            'date_of_birth' => $validated['date_of_birth'],
             'phone_has_whatsapp' => $hasWhatsapp,
             'whatsapp_number' => $hasWhatsapp ? null : ($validated['whatsapp_number'] ?? null),
         ];

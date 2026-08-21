@@ -30,6 +30,7 @@ class UpdateDonorProfileRequest extends FormRequest
             'blood_group' => ['required', Rule::in(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])],
             'role' => [$this->user()->canSelfServiceRole() ? 'required' : 'nullable', Rule::in(['student', 'staff', 'faculty'])],
             'gender' => ['required', Rule::in(['male', 'female', 'other'])],
+            'date_of_birth' => ['required', 'date', 'before:today', 'after:1900-01-01'],
             'department' => ['required', Rule::in($allDepartments)],
             'hall' => [$isStudent ? 'required' : 'nullable', Rule::in(config('juniv.halls'))],
             'batch' => [$isStudent ? 'required' : 'nullable', Rule::in(User::batchOptions())],

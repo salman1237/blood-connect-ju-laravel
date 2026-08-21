@@ -71,6 +71,12 @@
                 <x-input-error :messages="$errors->get('gender')" />
             </div>
 
+            <div class="space-y-1.5">
+                <x-input-label for="date_of_birth" value="Date of birth" />
+                <x-text-input id="date_of_birth" type="date" name="date_of_birth" :value="old('date_of_birth')" max="{{ now()->toDateString() }}" required />
+                <x-input-error :messages="$errors->get('date_of_birth')" />
+            </div>
+
             <x-button type="submit" size="lg" class="w-full">Create account</x-button>
 
             <p class="text-center text-xs text-muted-foreground">

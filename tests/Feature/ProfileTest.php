@@ -33,6 +33,24 @@ class ProfileTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_profile_page_shows_a_whatsapp_link_when_set(): void
+    {
+        $user = User::factory()->create(['phone_has_whatsapp' => true, 'phone' => '01712345678']);
+
+        $response = $this->actingAs($user)->get('/profile');
+
+        $response->assertSee('https://wa.me/8801712345678', false);
+    }
+
+    public function test_profile_page_omits_the_whatsapp_link_when_not_set(): void
+    {
+        $user = User::factory()->create(['phone_has_whatsapp' => false, 'phone' => null, 'whatsapp_number' => null]);
+
+        $response = $this->actingAs($user)->get('/profile');
+
+        $response->assertDontSee('wa.me');
+    }
+
     public function test_profile_page_shows_confirmed_donation_history(): void
     {
         $user = User::factory()->create(['role' => 'staff']);
@@ -66,6 +84,7 @@ class ProfileTest extends TestCase
             'blood_group' => 'AB+',
             'role' => 'staff',
             'gender' => 'male',
+            'date_of_birth' => '1990-01-01',
             'department' => 'Physics',
             'phone' => '01711111111',
             'is_available' => '0',
@@ -90,6 +109,7 @@ class ProfileTest extends TestCase
             'blood_group' => 'O-',
             'role' => 'staff',
             'gender' => 'male',
+            'date_of_birth' => '1990-01-01',
             'department' => 'Physics',
             'is_available' => '0',
         ]);

@@ -18,11 +18,27 @@ class DonorProfileFieldsTest extends TestCase
         $response = $this->actingAs($user)->post('/onboarding', [
             'blood_group' => 'O-',
             'role' => 'staff',
+            'date_of_birth' => '1990-01-01',
             'department' => 'Physics',
             'is_available' => '1',
         ]);
 
         $response->assertSessionHasErrors('gender');
+    }
+
+    public function test_onboarding_requires_a_date_of_birth(): void
+    {
+        $user = User::factory()->create(['role' => 'staff', 'date_of_birth' => null]);
+
+        $response = $this->actingAs($user)->post('/onboarding', [
+            'blood_group' => 'O-',
+            'role' => 'staff',
+            'gender' => 'male',
+            'department' => 'Physics',
+            'is_available' => '1',
+        ]);
+
+        $response->assertSessionHasErrors('date_of_birth');
     }
 
     public function test_onboarding_requires_batch_for_students_but_not_staff(): void
@@ -33,6 +49,7 @@ class DonorProfileFieldsTest extends TestCase
             'blood_group' => 'O-',
             'role' => 'student',
             'gender' => 'male',
+            'date_of_birth' => '1999-01-01',
             'hall' => 'Al Beruni Hall',
             'department' => 'Physics',
             'is_available' => '1',
@@ -45,6 +62,7 @@ class DonorProfileFieldsTest extends TestCase
             'blood_group' => 'O-',
             'role' => 'staff',
             'gender' => 'male',
+            'date_of_birth' => '1990-01-01',
             'department' => 'Physics',
             'is_available' => '1',
         ]);
@@ -60,6 +78,7 @@ class DonorProfileFieldsTest extends TestCase
             'blood_group' => 'O-',
             'role' => 'staff',
             'gender' => 'male',
+            'date_of_birth' => '1990-01-01',
             'department' => 'Physics',
             'phone' => '01711111111',
             'phone_has_whatsapp' => '0',
@@ -85,6 +104,7 @@ class DonorProfileFieldsTest extends TestCase
             'blood_group' => 'O-',
             'role' => 'staff',
             'gender' => 'male',
+            'date_of_birth' => '1990-01-01',
             'department' => 'Physics',
             'phone' => '01711111111',
             'phone_has_whatsapp' => '1',
@@ -105,6 +125,7 @@ class DonorProfileFieldsTest extends TestCase
             'blood_group' => 'O-',
             'role' => 'staff',
             'gender' => 'male',
+            'date_of_birth' => '1990-01-01',
             'department' => 'Physics',
             'is_available' => '1',
         ]);
@@ -124,6 +145,7 @@ class DonorProfileFieldsTest extends TestCase
             'blood_group' => 'O-',
             'role' => 'admin',
             'gender' => 'male',
+            'date_of_birth' => '1990-01-01',
             'department' => 'Physics',
             'is_available' => '1',
         ]);
@@ -145,6 +167,7 @@ class DonorProfileFieldsTest extends TestCase
             'blood_group' => 'AB-',
             'role' => 'student',
             'gender' => 'male',
+            'date_of_birth' => '1999-01-01',
             'hall' => 'Rokeya Hall',
             'batch' => '2021-22',
             'department' => 'Mathematics',

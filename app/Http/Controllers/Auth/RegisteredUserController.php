@@ -36,6 +36,7 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => ['required', 'in:student,staff,faculty'],
             'gender' => ['required', 'in:male,female,other'],
+            'date_of_birth' => ['required', 'date', 'before:today', 'after:1900-01-01'],
         ]);
 
         $user = User::create([
@@ -44,6 +45,7 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'gender' => $request->gender,
+            'date_of_birth' => $request->date_of_birth,
             'is_active' => true,
             'email_notifications_enabled' => true,
         ]);

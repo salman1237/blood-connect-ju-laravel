@@ -2,7 +2,7 @@
     <x-slot name="title">Complete Your Profile — Blood Connect JU</x-slot>
 
     <div x-data="{
-        step: {{ $errors->hasAny(['role', 'gender']) ? 2 : ($errors->hasAny(['hall', 'department', 'batch']) ? 3 : ($errors->hasAny(['is_available', 'last_donation_date']) ? 4 : 1)) }},
+        step: {{ $errors->hasAny(['role', 'gender', 'date_of_birth']) ? 2 : ($errors->hasAny(['hall', 'department', 'batch']) ? 3 : ($errors->hasAny(['is_available', 'last_donation_date']) ? 4 : 1)) }},
         total: 4,
         role: '{{ old('role', auth()->user()->role) }}',
         hasWhatsapp: {{ old('phone_has_whatsapp', '1') === '1' ? 'true' : 'false' }},
@@ -70,6 +70,12 @@
                             @endforeach
                         </div>
                         <x-input-error :messages="$errors->get('gender')" />
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <x-input-label for="date_of_birth" value="Date of birth" />
+                        <x-text-input id="date_of_birth" type="date" name="date_of_birth" :value="old('date_of_birth', auth()->user()->date_of_birth?->toDateString())" max="{{ now()->toDateString() }}" required />
+                        <x-input-error :messages="$errors->get('date_of_birth')" />
                     </div>
                 </div>
 

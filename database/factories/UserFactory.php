@@ -41,6 +41,7 @@ class UserFactory extends Factory
             // checked when role === 'student'.
             'gender' => fake()->randomElement(['male', 'female', 'other']),
             'batch' => '2020-21',
+            'date_of_birth' => fake()->dateTimeBetween('-40 years', '-18 years')->format('Y-m-d'),
         ];
     }
 

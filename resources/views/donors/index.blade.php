@@ -43,8 +43,8 @@
     @else
         <ul class="grid gap-3 sm:grid-cols-2">
             @foreach ($donors as $donor)
-                <li>
-                    <a href="{{ route('donors.show', $donor->user) }}" class="surface-panel flex items-center gap-3 p-4 transition-shadow hover:shadow-lift">
+                <li class="surface-panel flex items-center gap-3 p-4 transition-shadow hover:shadow-lift">
+                    <a href="{{ route('donors.show', $donor->user) }}" class="flex min-w-0 flex-1 items-center gap-3">
                         <x-blood-drop :group="$donor->blood_group" />
                         <div class="min-w-0 flex-1">
                             <p class="truncate text-sm font-semibold">{{ $donor->user->name }}</p>
@@ -52,10 +52,17 @@
                                 {{ $donor->user->hall ?? $donor->user->department ?? 'Campus' }}
                             </p>
                         </div>
-                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium {{ $donor->is_available ? 'bg-success/15 text-success' : 'bg-muted text-muted-foreground' }}">
-                            {{ $donor->is_available ? 'Available' : 'Unavailable' }}
-                        </span>
                     </a>
+                    <span class="inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium {{ $donor->is_available ? 'bg-success/15 text-success' : 'bg-muted text-muted-foreground' }}">
+                        {{ $donor->is_available ? 'Available' : 'Unavailable' }}
+                    </span>
+                    @if ($donor->user->whatsapp_url)
+                        <a href="{{ $donor->user->whatsapp_url }}" target="_blank" rel="noopener"
+                           class="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white transition hover:opacity-90"
+                           aria-label="Message {{ $donor->user->name }} on WhatsApp" title="Message on WhatsApp">
+                            <x-icon name="message-circle" class="size-4" />
+                        </a>
+                    @endif
                 </li>
             @endforeach
         </ul>

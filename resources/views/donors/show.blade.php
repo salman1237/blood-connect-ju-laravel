@@ -1,4 +1,7 @@
 <x-app-layout title="{{ $donor->name }}" subtitle="Donor profile">
+    @php
+        $roleLabels = ['student' => 'Student', 'staff' => 'Staff', 'faculty' => 'Teacher', 'verifier' => 'Verifier', 'admin' => 'Admin'];
+    @endphp
     <div class="mx-auto max-w-2xl space-y-5">
         <div class="surface-panel p-5 sm:p-6">
             <div class="flex items-center gap-4">
@@ -21,6 +24,66 @@
                 </span>
                 <span class="text-xs text-muted-foreground">Trust score: {{ $donor->donorProfile->trust_score }}</span>
             </div>
+
+            @if ($donor->whatsapp_url)
+                <a href="{{ $donor->whatsapp_url }}" target="_blank" rel="noopener"
+                   class="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#25D366] text-sm font-medium text-white transition hover:opacity-90">
+                    <x-icon name="message-circle" class="size-4" />
+                    Message on WhatsApp
+                </a>
+            @endif
+        </div>
+
+        <div class="surface-panel p-5 sm:p-6">
+            <h3 class="text-sm font-semibold">Details</h3>
+            <dl class="mt-3 grid grid-cols-2 gap-x-4 gap-y-4 text-sm sm:grid-cols-3">
+                <div>
+                    <dt class="text-xs text-muted-foreground">Gender</dt>
+                    <dd class="font-medium">{{ $donor->gender ? ucfirst($donor->gender) : '—' }}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs text-muted-foreground">Role</dt>
+                    <dd class="font-medium">{{ $roleLabels[$donor->role] ?? ucfirst($donor->role) }}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs text-muted-foreground">Age</dt>
+                    <dd class="font-medium">{{ $donor->age !== null ? $donor->age.' years' : '—' }}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs text-muted-foreground">Date of birth</dt>
+                    <dd class="font-medium">{{ $donor->date_of_birth?->format('M j, Y') ?? '—' }}</dd>
+                </div>
+                @if ($donor->role === 'student')
+                    <div>
+                        <dt class="text-xs text-muted-foreground">Hall</dt>
+                        <dd class="font-medium">{{ $donor->hall ?? '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-muted-foreground">Batch</dt>
+                        <dd class="font-medium">{{ $donor->batch ?? '—' }}</dd>
+                    </div>
+                @endif
+                <div>
+                    <dt class="text-xs text-muted-foreground">Department</dt>
+                    <dd class="font-medium">{{ $donor->department ?? '—' }}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs text-muted-foreground">Phone</dt>
+                    <dd class="font-medium">{{ $donor->phone ?? '—' }}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs text-muted-foreground">WhatsApp</dt>
+                    <dd class="font-medium">
+                        @if ($donor->whatsapp_url)
+                            <a href="{{ $donor->whatsapp_url }}" target="_blank" rel="noopener" class="text-primary underline">
+                                {{ $donor->phone_has_whatsapp ? $donor->phone : $donor->whatsapp_number }}
+                            </a>
+                        @else
+                            —
+                        @endif
+                    </dd>
+                </div>
+            </dl>
         </div>
 
         @if ($donor->badges->isNotEmpty())

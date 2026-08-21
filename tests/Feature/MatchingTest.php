@@ -252,4 +252,82 @@ class MatchingTest extends TestCase
 
         Notification::assertNotSentTo($incompatibleDonor, NewMatchingRequest::class);
     }
+
+    // --- Matching-donors page (landed on right after posting a request) ---
+
+    public function test_posting_a_request_redirects_to_the_matching_donors_page(): void
+    {
+        $requester = $this->requester();
+
+        $response = $this->actingAs($requester)->post('/requests', [
+            'blood_group' => 'O-',
+            'units_needed' => 1,
+            'hospital_name' => 'Enam Medical College Hospital',
+            'urgency' => 'critical',
+            'contact_method' => '01712345678',
+        ]);
+
+        $bloodRequest = BloodRequest::first();
+        $response->assertRedirect(route('requests.donors', $bloodRequest));
+    }
+
+    public function test_matching_donors_page_lists_available_compatible_donors_sorted_by_best_match(): void
+    {
+        $requester = $this->requester();
+        $request = BloodRequest::factory()->for($requester, 'requester')->create(['blood_group' => 'A+']);
+        $exactMatch = $this->donor('A+');
+        $compatibleOnly = $this->donor('O-');
+
+        $response = $this->actingAs($requester)->get(route('requests.donors', $request));
+
+        $response->assertOk();
+        $donors = $response->viewData('donors');
+        $this->assertCount(2, $donors);
+        $this->assertSame($exactMatch->id, $donors->first()->user_id);
+        $this->assertSame($compatibleOnly->id, $donors->last()->user_id);
+    }
+
+    public function test_matching_donors_page_excludes_unavailable_donors(): void
+    {
+        $requester = $this->requester();
+        $request = BloodRequest::factory()->for($requester, 'requester')->create(['blood_group' => 'O-']);
+        $this->donor('O-', [], ['is_available' => false]);
+
+        $response = $this->actingAs($requester)->get(route('requests.donors', $request));
+
+        $this->assertCount(0, $response->viewData('donors'));
+    }
+
+    public function test_matching_donors_page_excludes_incompatible_donors(): void
+    {
+        $requester = $this->requester();
+        $request = BloodRequest::factory()->for($requester, 'requester')->create(['blood_group' => 'O-']);
+        $this->donor('A+');
+
+        $response = $this->actingAs($requester)->get(route('requests.donors', $request));
+
+        $this->assertCount(0, $response->viewData('donors'));
+    }
+
+    public function test_matching_donors_page_links_each_donor_to_their_profile(): void
+    {
+        $requester = $this->requester();
+        $request = BloodRequest::factory()->for($requester, 'requester')->create(['blood_group' => 'O-']);
+        $donor = $this->donor('O-');
+
+        $response = $this->actingAs($requester)->get(route('requests.donors', $request));
+
+        $response->assertSee(route('donors.show', $donor));
+    }
+
+    public function test_anyone_onboarded_can_view_the_matching_donors_page(): void
+    {
+        $requester = $this->requester();
+        $request = BloodRequest::factory()->for($requester, 'requester')->create(['blood_group' => 'O-']);
+        $bystander = $this->requester();
+
+        $response = $this->actingAs($bystander)->get(route('requests.donors', $request));
+
+        $response->assertOk();
+    }
 }

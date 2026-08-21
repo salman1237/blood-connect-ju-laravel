@@ -98,7 +98,7 @@ class BloodRequestTest extends TestCase
         ]);
 
         $bloodRequest = BloodRequest::first();
-        $response->assertRedirect(route('requests.show', $bloodRequest));
+        $response->assertRedirect(route('requests.donors', $bloodRequest));
         $this->assertNotNull($bloodRequest->expires_at);
         $this->assertTrue($bloodRequest->expires_at->isSameHour(now()->addHours(72)));
     }

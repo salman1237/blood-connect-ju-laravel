@@ -147,6 +147,9 @@ class PopulateDemoData extends Command
                 'hall' => $isStudent ? $this->randomElement($halls) : null,
                 'department' => $this->randomElement($departments),
                 'batch' => $isStudent ? $this->randomElement($batches) : null,
+                'date_of_birth' => $isStudent
+                    ? $this->randomDateBetween('-26 years', '-19 years')->toDateString()
+                    : $this->randomDateBetween('-58 years', '-28 years')->toDateString(),
                 'phone' => '01'.$this->randomDigits(9),
                 'phone_has_whatsapp' => $this->randomBool(80),
                 'email_verified_at' => now(),

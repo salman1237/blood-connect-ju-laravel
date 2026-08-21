@@ -112,4 +112,63 @@ class DonorSearchTest extends TestCase
 
         $response->assertNotFound();
     }
+
+    public function test_donors_page_shows_a_whatsapp_link_for_donors_who_have_one(): void
+    {
+        $viewer = $this->onboardedUser();
+        $donor = $this->onboardedUser(['phone_has_whatsapp' => true, 'phone' => '01712345678']);
+
+        $response = $this->actingAs($viewer)->get('/donors');
+
+        $response->assertSee('https://wa.me/8801712345678', false);
+    }
+
+    public function test_donors_page_omits_the_whatsapp_link_when_a_donor_has_none(): void
+    {
+        $viewer = $this->onboardedUser();
+        $this->onboardedUser(['phone_has_whatsapp' => false, 'phone' => null, 'whatsapp_number' => null]);
+
+        $response = $this->actingAs($viewer)->get('/donors');
+
+        $response->assertDontSee('wa.me');
+    }
+
+    public function test_donor_profile_shows_full_details(): void
+    {
+        $viewer = $this->onboardedUser();
+        $donor = $this->onboardedUser([
+            'name' => 'Rahim Uddin',
+            'role' => 'student',
+            'gender' => 'male',
+            'hall' => 'Al Beruni Hall',
+            'department' => 'Computer Science and Engineering',
+            'batch' => '2020-21',
+            'date_of_birth' => now()->subYears(22)->toDateString(),
+            'phone' => '01712345678',
+            'phone_has_whatsapp' => true,
+        ]);
+
+        $response = $this->actingAs($viewer)->get(route('donors.show', $donor));
+
+        $response->assertOk();
+        $response->assertSee('Male');
+        $response->assertSee('Student');
+        $response->assertSee('22 years');
+        $response->assertSee('Al Beruni Hall');
+        $response->assertSee('Computer Science and Engineering');
+        $response->assertSee('2020-21');
+        $response->assertSee('01712345678');
+        $response->assertSee('https://wa.me/8801712345678', false);
+    }
+
+    public function test_donor_profile_shows_a_dash_when_date_of_birth_is_missing(): void
+    {
+        $viewer = $this->onboardedUser();
+        $donor = $this->onboardedUser(['date_of_birth' => null]);
+
+        $response = $this->actingAs($viewer)->get(route('donors.show', $donor));
+
+        $response->assertOk();
+        $response->assertSee('—');
+    }
 }

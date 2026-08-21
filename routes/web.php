@@ -44,6 +44,7 @@ Route::middleware(['auth', 'verified', 'onboarded'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::resource('requests', BloodRequestController::class)->except(['edit', 'update', 'destroy']);
+    Route::get('/requests/{request}/donors', [BloodRequestController::class, 'matchingDonors'])->name('requests.donors');
     Route::post('/requests/{request}/fulfill', [BloodRequestController::class, 'fulfill'])->name('requests.fulfill');
     Route::post('/requests/{request}/respond', [RequestResponseController::class, 'store'])->name('requests.respond');
     Route::post('/requests/{request}/report', [ReportController::class, 'store'])->name('requests.report');

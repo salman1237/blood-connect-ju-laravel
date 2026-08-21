@@ -83,6 +83,10 @@
                     </form>
                 @endcan
             </div>
+
+            <a href="{{ route('requests.donors', $bloodRequest) }}" class="mt-3 inline-block text-xs font-medium text-primary hover:underline">
+                See available matching donors
+            </a>
         </div>
 
         @if ($bloodRequest->responses->isNotEmpty())

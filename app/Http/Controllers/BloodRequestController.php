@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreBloodRequestRequest;
 use App\Models\BloodRequest;
+use App\Models\DonorProfile;
 use App\Models\Report;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -44,8 +45,31 @@ class BloodRequestController extends Controller
             'expires_at' => now()->addHours(BloodRequest::EXPIRES_AFTER_HOURS),
         ]);
 
-        return redirect()->route('requests.show', $bloodRequest)
+        return redirect()->route('requests.donors', $bloodRequest)
             ->with('status', 'request-created');
+    }
+
+    /**
+     * Landing page right after posting a request: every currently
+     * available, eligible, compatible donor for it — same ranking used to
+     * decide who actually got notified (exact blood group first, same
+     * hall/department first, available first), so this list matches
+     * reality rather than being a second, differently-sorted view of it.
+     */
+    public function matchingDonors(BloodRequest $request): View
+    {
+        $this->authorize('view', $request);
+
+        $donors = DonorProfile::query()
+            ->matchingRequest($request)
+            ->where('donor_profiles.is_available', true)
+            ->with('user')
+            ->get();
+
+        return view('requests.matching-donors', [
+            'bloodRequest' => $request,
+            'donors' => $donors,
+        ]);
     }
 
     public function show(BloodRequest $request): View
