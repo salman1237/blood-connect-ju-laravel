@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\BloodRequest;
-use App\Models\DonationHistory;
 use App\Models\DonorProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -50,57 +48,6 @@ class ProfileTest extends TestCase
         $response = $this->actingAs($user)->get('/profile');
 
         $response->assertDontSee('wa.me');
-    }
-
-    public function test_profile_page_shows_confirmed_donation_history(): void
-    {
-        $user = User::factory()->create(['role' => 'staff']);
-        DonorProfile::factory()->for($user)->create();
-        DonationHistory::factory()->for($user, 'donor')->create(['confirmed_at' => now()]);
-
-        $response = $this->actingAs($user)->get('/profile');
-
-        $response->assertOk();
-        $this->assertCount(1, $response->viewData('donationHistory'));
-    }
-
-    public function test_profile_page_shows_the_users_own_posted_requests(): void
-    {
-        $user = User::factory()->create(['role' => 'staff']);
-        $ownRequest = BloodRequest::factory()->for($user, 'requester')->create(['hospital_name' => 'Enam Medical College Hospital']);
-        $someoneElse = User::factory()->create(['role' => 'staff']);
-        BloodRequest::factory()->for($someoneElse, 'requester')->create();
-
-        $response = $this->actingAs($user)->get('/profile');
-
-        $response->assertOk();
-        $myRequests = $response->viewData('myRequests');
-        $this->assertCount(1, $myRequests);
-        $this->assertSame($ownRequest->id, $myRequests->first()->id);
-        $response->assertSee('Enam Medical College Hospital');
-    }
-
-    public function test_profile_page_shows_an_empty_state_when_no_requests_posted(): void
-    {
-        $user = User::factory()->create(['role' => 'staff']);
-
-        $response = $this->actingAs($user)->get('/profile');
-
-        $response->assertOk();
-        $this->assertCount(0, $response->viewData('myRequests'));
-        $response->assertSee('posted a request yet');
-    }
-
-    public function test_profile_page_shows_earned_badges(): void
-    {
-        $user = User::factory()->create(['role' => 'staff']);
-        DonorProfile::factory()->for($user)->create(['blood_group' => 'O-']);
-        DonationHistory::factory()->for($user, 'donor')->create();
-
-        $response = $this->actingAs($user)->get('/profile');
-
-        $response->assertOk();
-        $response->assertSee('Rare Donor');
     }
 
     public function test_donor_profile_can_be_updated(): void

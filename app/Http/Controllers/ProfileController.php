@@ -25,9 +25,6 @@ class ProfileController extends Controller
             'departments' => config('juniv.departments'),
             'bloodGroups' => ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
             'batches' => User::batchOptions(),
-            'donationHistory' => $request->user()->donationHistory()->with('bloodRequest')->latest('confirmed_at')->get(),
-            'badges' => $request->user()->badges,
-            'myRequests' => $request->user()->bloodRequests()->with('requester')->latest()->get(),
         ]);
     }
 

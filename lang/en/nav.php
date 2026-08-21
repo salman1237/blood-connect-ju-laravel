@@ -6,6 +6,8 @@ return [
     'alerts' => 'Alerts',
     'ranks' => 'Ranks',
     'profile' => 'Profile',
+    'donation_history' => 'Donation history',
+    'my_requests' => 'My requests',
     'settings' => 'Settings',
     'verifier_queue' => 'Verifier queue',
     'admin_dashboard' => 'Admin dashboard',

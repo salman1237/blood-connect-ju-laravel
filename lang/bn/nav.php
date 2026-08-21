@@ -6,6 +6,8 @@ return [
     'alerts' => 'বিজ্ঞপ্তি',
     'ranks' => 'র‍্যাংক',
     'profile' => 'প্রোফাইল',
+    'donation_history' => 'দান ইতিহাস',
+    'my_requests' => 'আমার অনুরোধ',
     'settings' => 'সেটিংস',
     'verifier_queue' => 'যাচাইকরণ তালিকা',
     'admin_dashboard' => 'অ্যাডমিন ড্যাশবোর্ড',

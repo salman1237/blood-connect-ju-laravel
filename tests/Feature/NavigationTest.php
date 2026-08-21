@@ -60,4 +60,16 @@ class NavigationTest extends TestCase
 
         $response->assertSee('Settings');
     }
+
+    public function test_every_user_sees_donation_history_and_my_requests_links(): void
+    {
+        $user = $this->onboardedUser(['role' => 'student', 'hall' => 'Rokeya Hall', 'department' => 'Physics']);
+
+        $response = $this->actingAs($user)->get('/dashboard');
+
+        $response->assertSee('Donation history');
+        $response->assertSee('My requests');
+        $response->assertSee(route('donations.index'), false);
+        $response->assertSee(route('requests.mine'), false);
+    }
 }

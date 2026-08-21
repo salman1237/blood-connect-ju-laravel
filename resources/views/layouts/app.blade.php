@@ -26,6 +26,8 @@
             // route happens to be registered — Route::has() alone doesn't
             // know whether *this* user is allowed there.
             $secondaryNav = [
+                ['route' => 'donations.index', 'label' => __('nav.donation_history'), 'icon' => 'heart-handshake', 'visible' => true],
+                ['route' => 'requests.mine', 'label' => __('nav.my_requests'), 'icon' => 'inbox', 'visible' => true],
                 ['route' => 'settings.edit', 'label' => __('nav.settings'), 'icon' => 'settings', 'visible' => true],
                 ['route' => 'verify.queue', 'label' => __('nav.verifier_queue'), 'icon' => 'shield-check', 'visible' => auth()->user()->isVerifier()],
                 ['route' => 'admin.dashboard', 'label' => __('nav.admin_dashboard'), 'icon' => 'bar-chart', 'visible' => auth()->user()->isAdmin()],

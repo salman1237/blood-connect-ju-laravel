@@ -5,10 +5,12 @@ use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\BloodRequestController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DonationHistoryController;
 use App\Http\Controllers\DonorSearchController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\MyRequestsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
@@ -35,6 +37,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
     Route::delete('/profile/photo', [ProfileController::class, 'destroyPhoto'])->name('profile.photo.destroy');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Their own history/requests, split out of the profile page — reachable
+    // pre-onboarding too, same as profile/settings above.
+    Route::get('/donations', DonationHistoryController::class)->name('donations.index');
+    Route::get('/requests/mine', MyRequestsController::class)->name('requests.mine');
 
     Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
     Route::patch('/settings/notifications', [SettingsController::class, 'updateNotifications'])->name('settings.notifications.update');
