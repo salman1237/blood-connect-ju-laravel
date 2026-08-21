@@ -60,7 +60,7 @@
                         <a href="{{ $donor->user->whatsapp_url }}" target="_blank" rel="noopener"
                            class="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white transition hover:opacity-90"
                            aria-label="Message {{ $donor->user->name }} on WhatsApp" title="Message on WhatsApp">
-                            <x-icon name="message-circle" class="size-4" />
+                            <x-whatsapp-icon class="size-4" />
                         </a>
                     @endif
                 </li>

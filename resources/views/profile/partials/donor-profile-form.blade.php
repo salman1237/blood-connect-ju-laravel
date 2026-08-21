@@ -24,7 +24,7 @@
     @if ($user->whatsapp_url)
         <a href="{{ $user->whatsapp_url }}" target="_blank" rel="noopener"
            class="mb-5 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#25D366] text-sm font-medium text-white transition hover:opacity-90">
-            <x-icon name="message-circle" class="size-4" />
+            <x-whatsapp-icon class="size-4" />
             Open my WhatsApp link
         </a>
     @endif
