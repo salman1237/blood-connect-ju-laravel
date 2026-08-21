@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\BloodRequest;
 use App\Models\DonationHistory;
 use App\Models\DonorProfile;
 use App\Models\User;
@@ -61,6 +62,33 @@ class ProfileTest extends TestCase
 
         $response->assertOk();
         $this->assertCount(1, $response->viewData('donationHistory'));
+    }
+
+    public function test_profile_page_shows_the_users_own_posted_requests(): void
+    {
+        $user = User::factory()->create(['role' => 'staff']);
+        $ownRequest = BloodRequest::factory()->for($user, 'requester')->create(['hospital_name' => 'Enam Medical College Hospital']);
+        $someoneElse = User::factory()->create(['role' => 'staff']);
+        BloodRequest::factory()->for($someoneElse, 'requester')->create();
+
+        $response = $this->actingAs($user)->get('/profile');
+
+        $response->assertOk();
+        $myRequests = $response->viewData('myRequests');
+        $this->assertCount(1, $myRequests);
+        $this->assertSame($ownRequest->id, $myRequests->first()->id);
+        $response->assertSee('Enam Medical College Hospital');
+    }
+
+    public function test_profile_page_shows_an_empty_state_when_no_requests_posted(): void
+    {
+        $user = User::factory()->create(['role' => 'staff']);
+
+        $response = $this->actingAs($user)->get('/profile');
+
+        $response->assertOk();
+        $this->assertCount(0, $response->viewData('myRequests'));
+        $response->assertSee('posted a request yet');
     }
 
     public function test_profile_page_shows_earned_badges(): void

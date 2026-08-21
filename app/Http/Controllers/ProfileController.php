@@ -27,6 +27,7 @@ class ProfileController extends Controller
             'batches' => User::batchOptions(),
             'donationHistory' => $request->user()->donationHistory()->with('bloodRequest')->latest('confirmed_at')->get(),
             'badges' => $request->user()->badges,
+            'myRequests' => $request->user()->bloodRequests()->with('requester')->latest()->get(),
         ]);
     }
 
