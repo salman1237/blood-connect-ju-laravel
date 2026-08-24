@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\DonorProfileController;
 use App\Http\Controllers\Api\V1\MatchingDonorsController;
 use App\Http\Controllers\Api\V1\MetaController;
+use App\Http\Controllers\Api\V1\PushTokenController;
 use App\Http\Controllers\Api\V1\RequestController;
 use App\Http\Controllers\Api\V1\RequestResponseController;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +26,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::get('/meta', MetaController::class)->name('meta');
         Route::patch('/donor-profile', [DonorProfileController::class, 'update'])->name('donor-profile.update');
+
+        // Not gated behind onboarded.api — a device should be able to
+        // register its push token as soon as it's logged in, well before
+        // onboarding is complete.
+        Route::post('/push-tokens', [PushTokenController::class, 'store'])->name('push-tokens.store');
+        Route::delete('/push-tokens', [PushTokenController::class, 'destroy'])->name('push-tokens.destroy');
 
         // Gated on a completed donor profile, same as the web app's
         // dashboard/requests routes — NOT applied above, since

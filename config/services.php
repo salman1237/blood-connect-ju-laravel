@@ -41,4 +41,14 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    // Separate Firebase project from the one above — google/client_id is
+    // for "Sign in with Google" on the web app; this is Cloud Messaging
+    // for the Android app's push notifications. Credentials file lives
+    // outside the repo entirely (storage/app/ is gitignored — see
+    // storage/app/.gitignore — and it's also chmod 600 on the server).
+    'firebase' => [
+        'credentials' => env('FIREBASE_CREDENTIALS', storage_path('app/firebase-service-account.json')),
+        'project_id' => env('FIREBASE_PROJECT_ID'),
+    ],
+
 ];

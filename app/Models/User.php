@@ -129,6 +129,12 @@ class User extends Authenticatable implements MustVerifyEmail
             ->withPivot('earned_at');
     }
 
+    /** Registered mobile devices — FcmChannel sends to every one of them. */
+    public function pushTokens(): HasMany
+    {
+        return $this->hasMany(PushToken::class);
+    }
+
     public function bloodRequests(): HasMany
     {
         return $this->hasMany(BloodRequest::class, 'requester_id');

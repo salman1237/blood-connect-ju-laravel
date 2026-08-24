@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\RequestResponse;
+use App\Notifications\Channels\FcmChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -19,7 +20,23 @@ class RequestResponded extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return $notifiable->wantsEmailNotifications() ? ['database', 'mail'] : ['database'];
+        $channels = $notifiable->wantsEmailNotifications() ? ['database', 'mail'] : ['database'];
+
+        return [...$channels, FcmChannel::class];
+    }
+
+    /**
+     * @return array{title: string, body: string, data: array<string, string|int>}
+     */
+    public function toFcm(object $notifiable): array
+    {
+        $bloodRequest = $this->response->bloodRequest;
+
+        return [
+            'title' => 'New response to your request',
+            'body' => "{$this->response->donor->name} can donate {$bloodRequest->blood_group} for your request at {$bloodRequest->hospital_name}.",
+            'data' => ['type' => 'request_responded', 'request_id' => $bloodRequest->id],
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage
