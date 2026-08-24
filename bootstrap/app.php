@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Middleware\EnsureAccountIsActive;
+use App\Http\Middleware\EnsureAccountIsActiveApi;
 use App\Http\Middleware\EnsureOnboardingComplete;
+use App\Http\Middleware\EnsureOnboardingCompleteApi;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
@@ -19,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
             'onboarded' => EnsureOnboardingComplete::class,
+            'onboarded.api' => EnsureOnboardingCompleteApi::class,
+            'active.api' => EnsureAccountIsActiveApi::class,
         ]);
         // Both appended (not prepended) — SetLocale reads the session, which
         // only exists after the web group's own StartSession middleware has

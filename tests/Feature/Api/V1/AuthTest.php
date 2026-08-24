@@ -123,6 +123,23 @@ class AuthTest extends TestCase
         $response->assertJsonPath('email', $user->email);
     }
 
+    public function test_a_token_issued_before_deactivation_stops_working_once_deactivated(): void
+    {
+        // Regression: login already refuses a newly-deactivated account,
+        // but EnsureAccountIsActive was only wired into the *web*
+        // middleware group — a token issued earlier would otherwise keep
+        // working via the API indefinitely.
+        $user = User::factory()->create(['is_active' => true]);
+        $token = $user->createToken('Pixel 8')->plainTextToken;
+
+        $user->update(['is_active' => false]);
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")->getJson('/api/v1/user');
+
+        $response->assertForbidden();
+        $this->assertDatabaseCount('personal_access_tokens', 0);
+    }
+
     public function test_unauthenticated_request_to_user_endpoint_is_rejected(): void
     {
         $response = $this->getJson('/api/v1/user');
