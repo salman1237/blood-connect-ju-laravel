@@ -62,7 +62,7 @@ class RequestController extends Controller
             'expires_at' => now()->addHours(BloodRequest::EXPIRES_AFTER_HOURS),
         ]);
 
-        return new BloodRequestResource($bloodRequest->load('requester'));
+        return new BloodRequestResource($bloodRequest->load(['requester', 'responses.donor']));
     }
 
     public function show(BloodRequest $bloodRequest): BloodRequestResource
@@ -72,5 +72,21 @@ class RequestController extends Controller
         $bloodRequest->load(['requester', 'responses.donor']);
 
         return new BloodRequestResource($bloodRequest);
+    }
+
+    /**
+     * Advance the overall status one step: open -> donor_found -> fulfilled.
+     * Same as web's BloodRequestController::fulfill() — separate from
+     * confirming *which* donor helped (RequestResponseController::confirm).
+     */
+    public function fulfill(BloodRequest $bloodRequest): BloodRequestResource
+    {
+        $this->authorize('fulfill', $bloodRequest);
+
+        $bloodRequest->update([
+            'status' => $bloodRequest->status === 'open' ? 'donor_found' : 'fulfilled',
+        ]);
+
+        return new BloodRequestResource($bloodRequest->fresh()->load(['requester', 'responses.donor']));
     }
 }

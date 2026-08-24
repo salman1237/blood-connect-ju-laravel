@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\DonorProfileController;
 use App\Http\Controllers\Api\V1\MatchingDonorsController;
 use App\Http\Controllers\Api\V1\MetaController;
 use App\Http\Controllers\Api\V1\RequestController;
+use App\Http\Controllers\Api\V1\RequestResponseController;
 use Illuminate\Support\Facades\Route;
 
 // Versioned so the Android app can pin to a contract (v1) while the web
@@ -35,6 +36,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('/requests', [RequestController::class, 'store'])->name('requests.store');
             Route::get('/requests/{bloodRequest}', [RequestController::class, 'show'])->name('requests.show');
             Route::get('/requests/{bloodRequest}/donors', MatchingDonorsController::class)->name('requests.donors');
+            Route::post('/requests/{bloodRequest}/fulfill', [RequestController::class, 'fulfill'])->name('requests.fulfill');
+            Route::post('/requests/{bloodRequest}/respond', [RequestResponseController::class, 'store'])->name('requests.respond');
+            Route::patch('/requests/{bloodRequest}/responses/{response}/confirm', [RequestResponseController::class, 'confirm'])->name('requests.responses.confirm');
+            Route::patch('/requests/{bloodRequest}/responses/{response}/confirm-donation', [RequestResponseController::class, 'confirmDonation'])->name('requests.responses.confirm-donation');
         });
     });
 });
