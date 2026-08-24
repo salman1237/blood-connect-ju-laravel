@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Notifications\QueuedResetPassword;
+use App\Notifications\QueuedVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -170,6 +172,24 @@ class User extends Authenticatable implements MustVerifyEmail
     public function canSelfServiceRole(): bool
     {
         return in_array($this->role, ['student', 'staff', 'faculty'], true);
+    }
+
+    /**
+     * Overrides the framework default (sent synchronously) with a queued
+     * equivalent — see App\Notifications\QueuedVerifyEmail for why.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new QueuedVerifyEmail);
+    }
+
+    /**
+     * Overrides the framework default (sent synchronously) with a queued
+     * equivalent — see App\Notifications\QueuedResetPassword for why.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new QueuedResetPassword($token));
     }
 
     /** Academic-year batches from 1970 to the present, newest first. */

@@ -3,7 +3,10 @@
 namespace Tests\Feature\Api\V1;
 
 use App\Models\User;
+use App\Notifications\QueuedVerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Notifications\SendQueuedNotifications;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -27,6 +30,31 @@ class AuthTest extends TestCase
         $response->assertJsonStructure(['token', 'user' => ['id', 'email']]);
         $this->assertDatabaseHas('users', ['email' => 'mobile@example.com']);
         $this->assertDatabaseCount('personal_access_tokens', 1);
+    }
+
+    public function test_registering_still_succeeds_even_if_sending_the_verification_email_would_fail(): void
+    {
+        // Regression: found live in production — a rejected recipient
+        // domain during the (previously synchronous) verification email
+        // send took the whole registration request down with a 500, even
+        // though the account row had already been committed. The
+        // notification is queued now, so a mail failure can only ever
+        // fail later in a background job, never this response.
+        Queue::fake();
+
+        $response = $this->postJson('/api/v1/register', [
+            'name' => 'Test User',
+            'email' => 'definitely-not-a-real-mailbox@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'role' => 'student',
+            'gender' => 'male',
+            'date_of_birth' => '2000-01-01',
+            'device_name' => 'Pixel 8',
+        ]);
+
+        $response->assertCreated();
+        Queue::assertPushed(SendQueuedNotifications::class, fn ($job) => $job->notification instanceof QueuedVerifyEmail);
     }
 
     public function test_registration_validates_the_same_rules_as_the_web_form(): void

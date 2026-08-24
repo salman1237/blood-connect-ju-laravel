@@ -3,7 +3,10 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use App\Notifications\QueuedVerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Notifications\SendQueuedNotifications;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -111,6 +114,30 @@ class RegistrationTest extends TestCase
 
         $user = User::where('email', 'test@example.com')->firstOrFail();
         $this->assertSame('1999-05-20', $user->date_of_birth->toDateString());
+    }
+
+    public function test_verification_email_is_queued_not_sent_synchronously(): void
+    {
+        // Regression: this notification used to be sent inline inside the
+        // registration request, so a mail-transport failure (a rejected
+        // recipient domain, a transient SMTP hiccup) took the whole signup
+        // down with a 500 even though the account had already been
+        // created. Queuing it means a mail failure can only ever fail a
+        // background job, never the registration response itself.
+        Queue::fake();
+
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'role' => 'student',
+            'gender' => 'male',
+            'date_of_birth' => '2000-01-01',
+        ]);
+
+        $response->assertRedirect(route('dashboard', absolute: false));
+        Queue::assertPushed(SendQueuedNotifications::class, fn ($job) => $job->notification instanceof QueuedVerifyEmail);
     }
 
     public function test_role_and_gender_are_saved_from_the_registration_form(): void
