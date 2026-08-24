@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\DonorProfileController;
+use App\Http\Controllers\Api\V1\MetaController;
 use Illuminate\Support\Facades\Route;
 
 // Versioned so the Android app can pin to a contract (v1) while the web
@@ -17,5 +19,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('/user', [AuthController::class, 'me'])->name('user');
+
+        Route::get('/meta', MetaController::class)->name('meta');
+        Route::patch('/donor-profile', [DonorProfileController::class, 'update'])->name('donor-profile.update');
     });
 });
