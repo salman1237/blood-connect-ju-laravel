@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\DonorProfileController;
 use App\Http\Controllers\Api\V1\LeaderboardController;
 use App\Http\Controllers\Api\V1\MatchingDonorsController;
 use App\Http\Controllers\Api\V1\MetaController;
+use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\PushTokenController;
 use App\Http\Controllers\Api\V1\RequestController;
 use App\Http\Controllers\Api\V1\RequestResponseController;
@@ -28,6 +29,11 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::get('/meta', MetaController::class)->name('meta');
         Route::patch('/donor-profile', [DonorProfileController::class, 'update'])->name('donor-profile.update');
+
+        // Account-level fields — reachable pre-onboarding too, same as the
+        // web app's /profile route (not gated by 'onboarded').
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
         // Not gated behind onboarded.api — a device should be able to
         // register its push token as soon as it's logged in, well before
