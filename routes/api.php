@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\DonorController;
 use App\Http\Controllers\Api\V1\DonorProfileController;
+use App\Http\Controllers\Api\V1\LeaderboardController;
 use App\Http\Controllers\Api\V1\MatchingDonorsController;
 use App\Http\Controllers\Api\V1\MetaController;
 use App\Http\Controllers\Api\V1\PushTokenController;
@@ -51,6 +52,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
             Route::get('/donors', [DonorController::class, 'index'])->name('donors.index');
             Route::get('/donors/{donor}', [DonorController::class, 'show'])->name('donors.show');
+
+            Route::get('/leaderboard', LeaderboardController::class)->name('leaderboard');
         });
     });
 });
