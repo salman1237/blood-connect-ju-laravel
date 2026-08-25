@@ -45,13 +45,14 @@
             @foreach ($donors as $donor)
                 <li class="surface-panel flex items-center gap-3 p-4 transition-shadow hover:shadow-lift">
                     <a href="{{ route('donors.show', $donor->user) }}" class="flex min-w-0 flex-1 items-center gap-3">
-                        <x-blood-drop :group="$donor->blood_group" />
+                        <x-user-avatar :user="$donor->user" class="flex size-11 shrink-0 text-sm" />
                         <div class="min-w-0 flex-1">
                             <p class="truncate text-sm font-semibold">{{ $donor->user->name }}</p>
                             <p class="truncate text-xs text-muted-foreground">
                                 {{ $donor->user->hall ?? $donor->user->department ?? 'Campus' }}
                             </p>
                         </div>
+                        <x-blood-drop :group="$donor->blood_group" size="sm" />
                     </a>
                     <span class="inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium {{ $donor->is_available ? 'bg-success/15 text-success' : 'bg-muted text-muted-foreground' }}">
                         {{ $donor->is_available ? 'Available' : 'Unavailable' }}
