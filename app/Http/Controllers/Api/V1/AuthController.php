@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\UserResource;
 use App\Models\User;
+use App\Services\GoogleIdTokenVerifier;
 use App\Support\RegistrationValidation;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
@@ -85,6 +86,55 @@ class AuthController extends Controller
         return response()->json([
             'token' => $token,
             'user' => new UserResource($user),
+        ]);
+    }
+
+    /**
+     * Exchange a Google ID token (obtained on-device via Credential Manager)
+     * for a Sanctum bearer token — the API's equivalent of web's
+     * GoogleAuthController, sharing the exact same account-linking rules via
+     * User::findOrCreateFromGoogle() so the two clients can't drift apart.
+     *
+     * The ID token's audience must be the *Web* OAuth client ID
+     * (config('services.google.client_id'), same one web's own Socialite
+     * flow uses) — Google Identity Services on Android issues tokens
+     * audienced to whatever "server client ID" the app requests with, not
+     * to its own Android-type client ID, so this is intentional, not a
+     * mismatch to "fix" later.
+     */
+    public function google(Request $request, GoogleIdTokenVerifier $verifier): JsonResponse
+    {
+        $validated = $request->validate([
+            'id_token' => ['required', 'string'],
+            'device_name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $payload = $verifier->verify($validated['id_token'], config('services.google.client_id'));
+
+        if (! $payload) {
+            throw ValidationException::withMessages([
+                'id_token' => ['That Google sign-in could not be verified. Please try again.'],
+            ]);
+        }
+
+        $user = User::findOrCreateFromGoogle(
+            googleId: $payload['sub'],
+            email: $payload['email'],
+            name: $payload['name'] ?? $payload['email'],
+            avatarUrl: $payload['picture'] ?? null,
+        );
+
+        if (! $user->is_active) {
+            throw ValidationException::withMessages([
+                'id_token' => ['This account has been deactivated. Contact an admin if you believe this is a mistake.'],
+            ]);
+        }
+
+        $token = $user->createToken($validated['device_name'])->plainTextToken;
+
+        return response()->json([
+            'token' => $token,
+            'user' => new UserResource($user->fresh()->load('donorProfile')),
         ]);
     }
 

@@ -275,6 +275,51 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->update(['avatar_url' => null]);
     }
 
+    /**
+     * Shared by web's GoogleAuthController (session login) and the API's own
+     * Google sign-in endpoint (Android) — one place for "find by google_id,
+     * else link an existing email match, else create a brand-new account"
+     * so neither client can drift from the other's account-linking rules.
+     * Never overwrites a photo the account already has with the Google one.
+     */
+    public static function findOrCreateFromGoogle(string $googleId, string $email, string $name, ?string $avatarUrl): self
+    {
+        $user = static::where('google_id', $googleId)->first();
+
+        if ($user) {
+            return $user;
+        }
+
+        $user = static::where('email', $email)->first();
+
+        if ($user) {
+            $user->forceFill([
+                'google_id' => $googleId,
+                'avatar_url' => $user->avatar_url ?? $avatarUrl,
+            ])->save();
+
+            return $user;
+        }
+
+        // Google has already verified this email address, so there's no
+        // separate OTP/verification step for accounts created this way.
+        // forceCreate (not create) because email_verified_at is
+        // deliberately excluded from $fillable everywhere else.
+        return static::forceCreate([
+            'name' => $name,
+            'email' => $email,
+            'google_id' => $googleId,
+            'avatar_url' => $avatarUrl,
+            'password' => null,
+            'email_verified_at' => now(),
+            // Set explicitly, not left to the migration's DB default —
+            // forceCreate() doesn't refresh the in-memory model, so an
+            // is_active check right after this would otherwise see null.
+            'is_active' => true,
+            'email_notifications_enabled' => true,
+        ]);
+    }
+
     private function deleteStoredAvatarIfLocal(): void
     {
         $publicBaseUrl = Storage::disk('public')->url('');

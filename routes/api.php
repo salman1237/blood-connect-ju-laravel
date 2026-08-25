@@ -26,6 +26,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         ->middleware('throttle:6,1')
         ->name('login');
 
+    Route::post('/login/google', [AuthController::class, 'google'])
+        ->middleware('throttle:6,1')
+        ->name('login.google');
+
     Route::middleware(['auth:sanctum', 'active.api'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('/user', [AuthController::class, 'me'])->name('user');

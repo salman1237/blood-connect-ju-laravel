@@ -25,38 +25,12 @@ class GoogleAuthController extends Controller
                 ->withErrors(['email' => 'Google sign-in failed. Please try again.']);
         }
 
-        $user = User::where('google_id', $googleUser->getId())->first();
-
-        if (! $user) {
-            $user = User::where('email', $googleUser->getEmail())->first();
-
-            if ($user) {
-                // Only import the Google photo if the account doesn't already
-                // have one — never clobber a photo the user uploaded themselves.
-                $user->forceFill([
-                    'google_id' => $googleUser->getId(),
-                    'avatar_url' => $user->avatar_url ?? $googleUser->getAvatar(),
-                ])->save();
-            } else {
-                // Google has already verified this email address, so there's no
-                // separate OTP/verification step for accounts created this way.
-                // forceCreate (not create) because email_verified_at is
-                // deliberately excluded from $fillable everywhere else.
-                $user = User::forceCreate([
-                    'name' => $googleUser->getName(),
-                    'email' => $googleUser->getEmail(),
-                    'google_id' => $googleUser->getId(),
-                    'avatar_url' => $googleUser->getAvatar(),
-                    'password' => null,
-                    'email_verified_at' => now(),
-                    // Set explicitly, not left to the migration's DB default —
-                    // forceCreate() doesn't refresh the in-memory model, so the
-                    // is_active check just below would otherwise see null.
-                    'is_active' => true,
-                    'email_notifications_enabled' => true,
-                ]);
-            }
-        }
+        $user = User::findOrCreateFromGoogle(
+            googleId: $googleUser->getId(),
+            email: $googleUser->getEmail(),
+            name: $googleUser->getName(),
+            avatarUrl: $googleUser->getAvatar(),
+        );
 
         if (! $user->is_active) {
             return redirect()->route('login')

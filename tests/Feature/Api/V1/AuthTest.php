@@ -4,6 +4,7 @@ namespace Tests\Feature\Api\V1;
 
 use App\Models\User;
 use App\Notifications\QueuedVerifyEmail;
+use App\Services\GoogleIdTokenVerifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\SendQueuedNotifications;
 use Illuminate\Support\Facades\Queue;
@@ -145,6 +146,104 @@ class AuthTest extends TestCase
         $response = $this->getJson('/api/v1/user');
 
         $response->assertUnauthorized();
+    }
+
+    private function fakeGoogleVerifier(?array $payload): void
+    {
+        $this->mock(GoogleIdTokenVerifier::class, function ($mock) use ($payload) {
+            $mock->shouldReceive('verify')->andReturn($payload ?? false);
+        });
+    }
+
+    public function test_new_user_is_created_and_receives_a_token_via_google(): void
+    {
+        $this->fakeGoogleVerifier([
+            'sub' => 'google-123',
+            'email' => 'newdonor@gmail.com',
+            'name' => 'New Donor',
+            'picture' => 'https://lh3.googleusercontent.com/fake-avatar.jpg',
+        ]);
+
+        $response = $this->postJson('/api/v1/login/google', [
+            'id_token' => 'fake-token',
+            'device_name' => 'Pixel 8',
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonStructure(['token', 'user' => ['id', 'email']]);
+        $this->assertDatabaseHas('users', ['email' => 'newdonor@gmail.com', 'google_id' => 'google-123']);
+    }
+
+    public function test_existing_google_user_logs_in_without_duplicating_via_the_api(): void
+    {
+        $existing = User::factory()->create(['email' => 'returning@gmail.com', 'google_id' => 'google-789']);
+
+        $this->fakeGoogleVerifier([
+            'sub' => 'google-789',
+            'email' => 'returning@gmail.com',
+            'name' => 'Returning User',
+            'picture' => null,
+        ]);
+
+        $response = $this->postJson('/api/v1/login/google', [
+            'id_token' => 'fake-token',
+            'device_name' => 'Pixel 8',
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('user.id', $existing->id);
+        $this->assertSame(1, User::where('email', 'returning@gmail.com')->count());
+    }
+
+    public function test_existing_email_account_is_linked_to_google_via_the_api(): void
+    {
+        $existing = User::factory()->create(['email' => 'linkme@example.com', 'google_id' => null]);
+
+        $this->fakeGoogleVerifier([
+            'sub' => 'google-999',
+            'email' => 'linkme@example.com',
+            'name' => 'Link Me',
+            'picture' => null,
+        ]);
+
+        $this->postJson('/api/v1/login/google', ['id_token' => 'fake-token', 'device_name' => 'Pixel 8'])->assertOk();
+
+        $this->assertSame('google-999', $existing->fresh()->google_id);
+        $this->assertSame(1, User::where('email', 'linkme@example.com')->count());
+    }
+
+    public function test_an_invalid_google_token_is_rejected(): void
+    {
+        $this->fakeGoogleVerifier(null);
+
+        $response = $this->postJson('/api/v1/login/google', [
+            'id_token' => 'garbage',
+            'device_name' => 'Pixel 8',
+        ]);
+
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors('id_token');
+        $this->assertDatabaseCount('users', 0);
+    }
+
+    public function test_google_sign_in_fails_for_a_deactivated_account(): void
+    {
+        User::factory()->create(['email' => 'deactivated@gmail.com', 'google_id' => 'google-555', 'is_active' => false]);
+
+        $this->fakeGoogleVerifier([
+            'sub' => 'google-555',
+            'email' => 'deactivated@gmail.com',
+            'name' => 'Deactivated User',
+            'picture' => null,
+        ]);
+
+        $response = $this->postJson('/api/v1/login/google', [
+            'id_token' => 'fake-token',
+            'device_name' => 'Pixel 8',
+        ]);
+
+        $response->assertUnprocessable();
+        $this->assertDatabaseCount('personal_access_tokens', 0);
     }
 
     public function test_logout_revokes_only_the_current_token(): void
