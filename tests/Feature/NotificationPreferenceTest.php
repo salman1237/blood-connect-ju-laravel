@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Notifications\Channels\FcmChannel;
 use App\Notifications\EligibleDonorReminder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -17,7 +18,10 @@ class NotificationPreferenceTest extends TestCase
 
         $channels = (new EligibleDonorReminder(0))->via($user);
 
-        $this->assertSame(['database', 'mail'], $channels);
+        // Push always rides along regardless of the email preference — it's
+        // a separate toggle (whether this device has any tokens registered
+        // is what actually gates delivery, not this).
+        $this->assertSame(['database', 'mail', FcmChannel::class], $channels);
     }
 
     public function test_notification_skips_mail_when_disabled(): void
@@ -26,7 +30,7 @@ class NotificationPreferenceTest extends TestCase
 
         $channels = (new EligibleDonorReminder(0))->via($user);
 
-        $this->assertSame(['database'], $channels);
+        $this->assertSame(['database', FcmChannel::class], $channels);
     }
 
     public function test_in_app_notification_still_recorded_when_email_disabled(): void

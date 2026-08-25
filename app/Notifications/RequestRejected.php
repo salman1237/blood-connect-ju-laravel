@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\BloodRequest;
+use App\Notifications\Channels\FcmChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -20,7 +21,21 @@ class RequestRejected extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return $notifiable->wantsEmailNotifications() ? ['database', 'mail'] : ['database'];
+        $channels = $notifiable->wantsEmailNotifications() ? ['database', 'mail'] : ['database'];
+
+        return [...$channels, FcmChannel::class];
+    }
+
+    /**
+     * @return array{title: string, body: string, data: array<string, string|int>}
+     */
+    public function toFcm(object $notifiable): array
+    {
+        return [
+            'title' => 'Your blood request was not approved',
+            'body' => "Your request at {$this->bloodRequest->hospital_name} was reviewed and not approved.",
+            'data' => ['type' => 'request_rejected', 'request_id' => $this->bloodRequest->id],
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

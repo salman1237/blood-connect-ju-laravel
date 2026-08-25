@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Channels\FcmChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -23,7 +24,27 @@ class EligibleDonorReminder extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return $notifiable->wantsEmailNotifications() ? ['database', 'mail'] : ['database'];
+        $channels = $notifiable->wantsEmailNotifications() ? ['database', 'mail'] : ['database'];
+
+        return [...$channels, FcmChannel::class];
+    }
+
+    /**
+     * Not tied to a single request — no request_id, so a tap just opens the
+     * app to Home rather than deep-linking (RequestDetailScreen has nothing
+     * single to point at here).
+     *
+     * @return array{title: string, body: string, data: array<string, string>}
+     */
+    public function toFcm(object $notifiable): array
+    {
+        return [
+            'title' => "You're eligible to donate again",
+            'body' => $this->matchingOpenRequests > 0
+                ? "{$this->matchingOpenRequests} open ".str('request')->plural($this->matchingOpenRequests).' match your blood group.'
+                : "It's been a while since your last donation — come back and check open requests.",
+            'data' => ['type' => 'eligible_donor_reminder'],
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

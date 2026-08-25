@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Channels\FcmChannel;
 use Illuminate\Auth\Notifications\VerifyEmail as BaseVerifyEmail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -20,4 +21,33 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 class QueuedVerifyEmail extends BaseVerifyEmail implements ShouldQueue
 {
     use Queueable;
+
+    /**
+     * Unconditional 'mail' + push, same as the base class's unconditional
+     * 'mail' — this is required-account-setup, not a preference-gated
+     * notification, so it isn't gated on wantsEmailNotifications() the way
+     * the domain notifications are.
+     *
+     * @return array<int, string>
+     */
+    public function via($notifiable)
+    {
+        return ['mail', FcmChannel::class];
+    }
+
+    /**
+     * No deep-link target — the signed verification URL is a browser-only
+     * route, not something the Android app has a screen to consume. This is
+     * purely a "go check your email" nudge; tapping just opens the app.
+     *
+     * @return array{title: string, body: string, data: array<string, string>}
+     */
+    public function toFcm($notifiable): array
+    {
+        return [
+            'title' => 'Verify your email',
+            'body' => 'Check your inbox to verify your Blood Connect JU email address.',
+            'data' => ['type' => 'verify_email'],
+        ];
+    }
 }

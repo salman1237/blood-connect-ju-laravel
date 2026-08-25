@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\RequestResponse;
+use App\Notifications\Channels\FcmChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -24,7 +25,26 @@ class DonationConfirmationPending extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return $notifiable->wantsEmailNotifications() ? ['database', 'mail'] : ['database'];
+        $channels = $notifiable->wantsEmailNotifications() ? ['database', 'mail'] : ['database'];
+
+        return [...$channels, FcmChannel::class];
+    }
+
+    /**
+     * @return array{title: string, body: string, data: array<string, string|int>}
+     */
+    public function toFcm(object $notifiable): array
+    {
+        $bloodRequest = $this->response->bloodRequest;
+        $isDonor = $notifiable->id === $this->response->donor_id;
+
+        return [
+            'title' => 'Please confirm the donation',
+            'body' => $isDonor
+                ? "The requester confirmed your donation at {$bloodRequest->hospital_name} — please confirm your side too."
+                : "Your donor confirmed the donation for your request at {$bloodRequest->hospital_name} — please confirm your side too.",
+            'data' => ['type' => 'donation_confirmation_pending', 'request_id' => $bloodRequest->id],
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\BloodRequest;
+use App\Notifications\Channels\FcmChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -20,7 +21,21 @@ class RequestVerified extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return $notifiable->wantsEmailNotifications() ? ['database', 'mail'] : ['database'];
+        $channels = $notifiable->wantsEmailNotifications() ? ['database', 'mail'] : ['database'];
+
+        return [...$channels, FcmChannel::class];
+    }
+
+    /**
+     * @return array{title: string, body: string, data: array<string, string|int>}
+     */
+    public function toFcm(object $notifiable): array
+    {
+        return [
+            'title' => 'Your blood request has been verified',
+            'body' => "Your request at {$this->bloodRequest->hospital_name} is now visible campus-wide with a Verified badge.",
+            'data' => ['type' => 'request_verified', 'request_id' => $this->bloodRequest->id],
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage
