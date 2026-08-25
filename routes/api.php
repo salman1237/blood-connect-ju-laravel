@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\DonorController;
 use App\Http\Controllers\Api\V1\DonorProfileController;
 use App\Http\Controllers\Api\V1\MatchingDonorsController;
 use App\Http\Controllers\Api\V1\MetaController;
@@ -47,6 +48,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('/requests/{bloodRequest}/respond', [RequestResponseController::class, 'store'])->name('requests.respond');
             Route::patch('/requests/{bloodRequest}/responses/{response}/confirm', [RequestResponseController::class, 'confirm'])->name('requests.responses.confirm');
             Route::patch('/requests/{bloodRequest}/responses/{response}/confirm-donation', [RequestResponseController::class, 'confirmDonation'])->name('requests.responses.confirm-donation');
+
+            Route::get('/donors', [DonorController::class, 'index'])->name('donors.index');
+            Route::get('/donors/{donor}', [DonorController::class, 'show'])->name('donors.show');
         });
     });
 });
