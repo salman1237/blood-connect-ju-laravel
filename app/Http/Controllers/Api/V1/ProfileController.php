@@ -32,6 +32,33 @@ class ProfileController extends Controller
         return new UserResource($user->fresh()->load('donorProfile'));
     }
 
+    /**
+     * Upload (or replace) the account's photo — mirrors web's
+     * ProfileController::updatePhoto(), same shared User::updateAvatar().
+     * Visible wherever avatar_url is surfaced (UserResource), same as web's
+     * x-user-avatar everywhere it's used.
+     */
+    public function updatePhoto(Request $request): UserResource
+    {
+        $request->validate([
+            'photo' => ['required', 'image', 'max:4096'],
+        ]);
+
+        $user = $request->user();
+        $user->updateAvatar($request->file('photo'));
+
+        return new UserResource($user->fresh()->load('donorProfile'));
+    }
+
+    /** Mirrors web's ProfileController::destroyPhoto() — reverts to the initials fallback. */
+    public function destroyPhoto(Request $request): UserResource
+    {
+        $user = $request->user();
+        $user->removeAvatar();
+
+        return new UserResource($user->fresh()->load('donorProfile'));
+    }
+
     /** Mirrors web's ProfileController::destroy() — password-confirmed account deletion. */
     public function destroy(Request $request): Response
     {

@@ -4,6 +4,8 @@ namespace Tests\Feature\Api\V1;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -119,5 +121,85 @@ class ProfileTest extends TestCase
     {
         $this->patchJson('/api/v1/profile', ['name' => 'x', 'email' => 'x@juniv.edu'])->assertUnauthorized();
         $this->deleteJson('/api/v1/profile', ['password' => 'password'])->assertUnauthorized();
+    }
+
+    public function test_user_can_upload_a_profile_photo(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user, 'sanctum')->post('/api/v1/profile/photo', [
+            'photo' => UploadedFile::fake()->image('me.jpg'),
+        ], ['Accept' => 'application/json']);
+
+        $response->assertOk();
+        $this->assertStringContainsString('avatars/', $response->json('avatar_url'));
+        $this->assertStringContainsString('avatars/', $user->fresh()->avatar_url);
+    }
+
+    public function test_non_image_photo_uploads_are_rejected(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user, 'sanctum')->post('/api/v1/profile/photo', [
+            'photo' => UploadedFile::fake()->create('resume.pdf', 100),
+        ], ['Accept' => 'application/json']);
+
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors('photo');
+        $this->assertNull($user->fresh()->avatar_url);
+    }
+
+    public function test_uploading_a_new_photo_deletes_the_previous_locally_stored_one(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $this->actingAs($user, 'sanctum')->post('/api/v1/profile/photo', [
+            'photo' => UploadedFile::fake()->image('first.jpg'),
+        ], ['Accept' => 'application/json']);
+        $firstPath = str_replace(Storage::disk('public')->url(''), '', $user->fresh()->avatar_url);
+        Storage::disk('public')->assertExists($firstPath);
+
+        $this->actingAs($user, 'sanctum')->post('/api/v1/profile/photo', [
+            'photo' => UploadedFile::fake()->image('second.jpg'),
+        ], ['Accept' => 'application/json']);
+
+        Storage::disk('public')->assertMissing($firstPath);
+    }
+
+    public function test_user_can_remove_their_photo(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        $this->actingAs($user, 'sanctum')->post('/api/v1/profile/photo', [
+            'photo' => UploadedFile::fake()->image('me.jpg'),
+        ], ['Accept' => 'application/json']);
+        $path = str_replace(Storage::disk('public')->url(''), '', $user->fresh()->avatar_url);
+
+        $response = $this->actingAs($user, 'sanctum')->deleteJson('/api/v1/profile/photo');
+
+        $response->assertOk();
+        $this->assertNull($response->json('avatar_url'));
+        $this->assertNull($user->fresh()->avatar_url);
+        Storage::disk('public')->assertMissing($path);
+    }
+
+    public function test_removing_a_google_imported_photo_just_clears_the_url(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create(['avatar_url' => 'https://lh3.googleusercontent.com/photo.jpg']);
+
+        $this->actingAs($user, 'sanctum')->deleteJson('/api/v1/profile/photo')->assertOk();
+
+        $this->assertNull($user->fresh()->avatar_url);
+    }
+
+    public function test_photo_endpoints_require_authentication(): void
+    {
+        $this->postJson('/api/v1/profile/photo', [])->assertUnauthorized();
+        $this->deleteJson('/api/v1/profile/photo')->assertUnauthorized();
     }
 }

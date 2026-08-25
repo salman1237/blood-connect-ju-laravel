@@ -9,7 +9,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -68,13 +67,7 @@ class ProfileController extends Controller
             'photo' => ['required', 'image', 'max:4096'],
         ]);
 
-        $user = $request->user();
-
-        $this->deleteStoredAvatarIfLocal($user->avatar_url);
-
-        $path = $request->file('photo')->store('avatars', 'public');
-
-        $user->update(['avatar_url' => Storage::disk('public')->url($path)]);
+        $request->user()->updateAvatar($request->file('photo'));
 
         return Redirect::route('profile.edit')->with('status', 'photo-updated');
     }
@@ -84,22 +77,9 @@ class ProfileController extends Controller
      */
     public function destroyPhoto(Request $request): RedirectResponse
     {
-        $user = $request->user();
-
-        $this->deleteStoredAvatarIfLocal($user->avatar_url);
-
-        $user->update(['avatar_url' => null]);
+        $request->user()->removeAvatar();
 
         return Redirect::route('profile.edit')->with('status', 'photo-removed');
-    }
-
-    private function deleteStoredAvatarIfLocal(?string $avatarUrl): void
-    {
-        $publicBaseUrl = Storage::disk('public')->url('');
-
-        if ($avatarUrl && str_starts_with($avatarUrl, $publicBaseUrl)) {
-            Storage::disk('public')->delete(str_replace($publicBaseUrl, '', $avatarUrl));
-        }
     }
 
     /**

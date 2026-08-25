@@ -12,7 +12,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -245,5 +247,40 @@ class User extends Authenticatable implements MustVerifyEmail
                 'last_donation_date' => $validated['last_donation_date'] ?? null,
             ]
         );
+    }
+
+    /**
+     * Shared by the web profile page's upload form and the API's own
+     * upload endpoint (Android) — one place for "store the file, clean up
+     * whatever was there before, save the new URL" so neither client can
+     * drift from the other's behavior. Any previously locally-stored photo
+     * is deleted so replaced uploads don't pile up in storage; a
+     * Google-hosted URL (never under our own 'avatars' disk path) is left
+     * alone rather than deleted.
+     */
+    public function updateAvatar(UploadedFile $photo): void
+    {
+        $this->deleteStoredAvatarIfLocal();
+
+        $path = $photo->store('avatars', 'public');
+
+        $this->update(['avatar_url' => Storage::disk('public')->url($path)]);
+    }
+
+    /** Reverts to the initials-fallback avatar — see App\Http\Resources\Api\UserResource / web's x-user-avatar. */
+    public function removeAvatar(): void
+    {
+        $this->deleteStoredAvatarIfLocal();
+
+        $this->update(['avatar_url' => null]);
+    }
+
+    private function deleteStoredAvatarIfLocal(): void
+    {
+        $publicBaseUrl = Storage::disk('public')->url('');
+
+        if ($this->avatar_url && str_starts_with($this->avatar_url, $publicBaseUrl)) {
+            Storage::disk('public')->delete(str_replace($publicBaseUrl, '', $this->avatar_url));
+        }
     }
 }
