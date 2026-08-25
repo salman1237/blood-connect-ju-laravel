@@ -69,6 +69,30 @@ class RequestTest extends TestCase
         $response->assertJsonStructure(['active', 'critical', 'fulfilled_today', 'registered_donors']);
     }
 
+    public function test_mine_returns_every_status_the_user_has_posted(): void
+    {
+        $user = $this->onboardedUser();
+        $open = BloodRequest::factory()->for($user, 'requester')->create(['status' => 'open']);
+        $fulfilled = BloodRequest::factory()->for($user, 'requester')->create(['status' => 'fulfilled']);
+        // Someone else's request must never show up here.
+        BloodRequest::factory()->create(['status' => 'open']);
+
+        $response = $this->actingAs($user, 'sanctum')->getJson('/api/v1/requests/mine');
+
+        $response->assertOk();
+        $ids = collect($response->json())->pluck('id');
+        $this->assertEqualsCanonicalizing([$open->id, $fulfilled->id], $ids->all());
+    }
+
+    public function test_mine_requires_onboarding(): void
+    {
+        $user = User::factory()->create(['role' => 'student', 'hall' => null, 'department' => null]);
+
+        $response = $this->actingAs($user, 'sanctum')->getJson('/api/v1/requests/mine');
+
+        $response->assertForbidden();
+    }
+
     public function test_a_request_can_be_created_via_the_api(): void
     {
         $user = $this->onboardedUser();

@@ -36,6 +36,23 @@ class RequestController extends Controller
         return BloodRequestResource::collection($requests);
     }
 
+    /**
+     * Every request this user has posted, any status — the API twin of
+     * web's requests/mine.blade.php (MyRequestsController). Deliberately
+     * a separate route from index() rather than a query-string filter on
+     * it: index() is scoped to open() only (the live triage feed), and
+     * "mine" needs every status including fulfilled/expired ones.
+     */
+    public function mine(Request $request): AnonymousResourceCollection
+    {
+        $requests = $request->user()->bloodRequests()
+            ->with(['requester', 'responses.donor'])
+            ->latest()
+            ->get();
+
+        return BloodRequestResource::collection($requests);
+    }
+
     public function stats(): JsonResponse
     {
         return response()->json([

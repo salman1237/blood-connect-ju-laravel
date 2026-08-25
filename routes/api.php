@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\DonationsController;
 use App\Http\Controllers\Api\V1\DonorController;
 use App\Http\Controllers\Api\V1\DonorProfileController;
 use App\Http\Controllers\Api\V1\LeaderboardController;
@@ -48,6 +49,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::middleware('onboarded.api')->group(function () {
             Route::get('/requests', [RequestController::class, 'index'])->name('requests.index');
             Route::get('/requests/stats', [RequestController::class, 'stats'])->name('requests.stats');
+            // Must be registered before the {bloodRequest} wildcard below —
+            // otherwise "mine" is swallowed by implicit route-model binding
+            // (tried as a BloodRequest id, 404s instead of matching this).
+            Route::get('/requests/mine', [RequestController::class, 'mine'])->name('requests.mine');
             Route::post('/requests', [RequestController::class, 'store'])->name('requests.store');
             Route::get('/requests/{bloodRequest}', [RequestController::class, 'show'])->name('requests.show');
             Route::get('/requests/{bloodRequest}/donors', MatchingDonorsController::class)->name('requests.donors');
@@ -60,6 +65,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('/donors/{donor}', [DonorController::class, 'show'])->name('donors.show');
 
             Route::get('/leaderboard', LeaderboardController::class)->name('leaderboard');
+
+            Route::get('/donations', DonationsController::class)->name('donations.index');
         });
     });
 });
