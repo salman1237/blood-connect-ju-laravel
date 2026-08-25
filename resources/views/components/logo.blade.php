@@ -8,9 +8,7 @@
 @props(['href' => '/', 'compact' => false])
 
 <a href="{{ $href }}" {{ $attributes->class(['flex min-w-0 items-center gap-2']) }}>
-    <span class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-        <x-icon name="droplet" class="size-5" />
-    </span>
+    <img src="{{ asset('images/logo-mark.png') }}" alt="" class="h-9 w-auto shrink-0" />
     <span class="min-w-0 leading-tight">
         <span class="block truncate text-sm font-semibold tracking-tight">Blood Connect JU</span>
         <span @class(['truncate text-[11px] text-muted-foreground', 'hidden sm:block' => $compact, 'block' => ! $compact])>Jahangirnagar University</span>
