@@ -7,10 +7,12 @@ use App\Http\Controllers\Api\V1\DonorProfileController;
 use App\Http\Controllers\Api\V1\LeaderboardController;
 use App\Http\Controllers\Api\V1\MatchingDonorsController;
 use App\Http\Controllers\Api\V1\MetaController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\PushTokenController;
 use App\Http\Controllers\Api\V1\RequestController;
 use App\Http\Controllers\Api\V1\RequestResponseController;
+use App\Http\Controllers\Api\V1\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 // Versioned so the Android app can pin to a contract (v1) while the web
@@ -37,6 +39,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
         Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
         Route::delete('/profile/photo', [ProfileController::class, 'destroyPhoto'])->name('profile.photo.destroy');
+
+        // Also reachable pre-onboarding, same as profile above — mirrors
+        // web's SettingsController, which isn't gated by 'onboarded' either.
+        Route::patch('/settings/notifications', [SettingsController::class, 'updateNotifications'])->name('settings.notifications.update');
 
         // Not gated behind onboarded.api — a device should be able to
         // register its push token as soon as it's logged in, well before
@@ -69,6 +75,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('/leaderboard', LeaderboardController::class)->name('leaderboard');
 
             Route::get('/donations', DonationsController::class)->name('donations.index');
+
+            // Same gating as web's own /notifications routes — no
+            // request/donor-related notification could exist before
+            // onboarding anyway. read-all registered before the {id}
+            // wildcard for the same reason requests/mine is above.
+            Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+            Route::patch('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+            Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
         });
     });
 });
