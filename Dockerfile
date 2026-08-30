@@ -7,6 +7,18 @@ RUN apt-get update && apt-get install -y \
     && a2enmod rewrite \
     && rm -rf /var/lib/apt/lists/*
 
+# php.ini's own defaults (upload_max_filesize=2M) are well below the app's
+# own advertised/validated photo-upload limit (max:4096 KB, i.e. 4MB, in
+# both ProfileController@updatePhoto — web and API) — PHP was silently
+# rejecting any photo between 2-4MB before Laravel's validation ever saw
+# it, surfacing as "The photo failed to upload." with no clear cause.
+# post_max_size needs headroom above upload_max_filesize for multipart
+# overhead (other form fields, boundaries).
+RUN { \
+        echo 'upload_max_filesize = 8M'; \
+        echo 'post_max_size = 10M'; \
+    } > /usr/local/etc/php/conf.d/uploads.ini
+
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
