@@ -2,7 +2,7 @@
 
 A blood donation coordination platform for Jahangirnagar University students, faculty, and staff — built as a Laravel 12 + Blade + Tailwind application.
 
-**Live:** [blood.deshlet.com](https://blood.deshlet.com)
+**Live:** [bloodconnectju.org](https://bloodconnectju.org)
 
 Full project spec: [`claudePrompt.md`](claudePrompt.md). Build progress / phase-by-phase log: [`.claude-progress.md`](.claude-progress.md) — the detailed record of every decision, deviation from the brief, and bug found along the way.
 
