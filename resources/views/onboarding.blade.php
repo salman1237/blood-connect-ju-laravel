@@ -137,6 +137,15 @@
                         <x-text-input id="whatsapp_number" type="tel" name="whatsapp_number" placeholder="01XXXXXXXXX" :value="old('whatsapp_number')" />
                         <x-input-error :messages="$errors->get('whatsapp_number')" />
                     </div>
+
+                    <label class="flex items-center justify-between gap-3 rounded-xl border border-border p-4">
+                        <span>
+                            <span class="block text-sm font-medium">Hide my number from other users</span>
+                            <span class="text-xs text-muted-foreground">Only admins can see it. Your WhatsApp button stays hidden from everyone else too — you can change this any time from your profile.</span>
+                        </span>
+                        <input type="hidden" name="phone_visibility" value="public">
+                        <input type="checkbox" name="phone_visibility" value="admin_only" {{ old('phone_visibility') === 'admin_only' ? 'checked' : '' }} class="size-5 shrink-0 rounded border-border text-primary focus:ring-primary">
+                    </label>
                 </div>
 
                 {{-- Step 4: availability --}}

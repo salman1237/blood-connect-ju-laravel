@@ -27,7 +27,7 @@ class DonorSummaryResource extends JsonResource
             'hall' => $this->user->hall,
             'department' => $this->user->department,
             'avatar_url' => $this->user->avatar_url,
-            'whatsapp_url' => $this->user->whatsapp_url,
+            'whatsapp_url' => $this->user->phoneVisibleTo($request->user()) ? $this->user->whatsapp_url : null,
         ];
     }
 }

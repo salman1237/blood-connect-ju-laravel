@@ -57,7 +57,7 @@
                     <span class="inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium {{ $donor->is_available ? 'bg-success/15 text-success' : 'bg-muted text-muted-foreground' }}">
                         {{ $donor->is_available ? 'Available' : 'Unavailable' }}
                     </span>
-                    @if ($donor->user->whatsapp_url)
+                    @if ($donor->user->phoneVisibleTo(auth()->user()) && $donor->user->whatsapp_url)
                         <a href="{{ $donor->user->whatsapp_url }}" target="_blank" rel="noopener"
                            class="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white transition hover:opacity-90"
                            aria-label="Message {{ $donor->user->name }} on WhatsApp" title="Message on WhatsApp">

@@ -31,6 +31,8 @@ class DonorDetailResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $phoneVisible = $this->resource->phoneVisibleTo($request->user());
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -41,10 +43,10 @@ class DonorDetailResource extends JsonResource
             'hall' => $this->hall,
             'department' => $this->department,
             'batch' => $this->batch,
-            'phone' => $this->phone,
-            'whatsapp_number' => $this->whatsapp_number,
+            'phone' => $phoneVisible ? $this->phone : null,
+            'whatsapp_number' => $phoneVisible ? $this->whatsapp_number : null,
             'phone_has_whatsapp' => $this->phone_has_whatsapp,
-            'whatsapp_url' => $this->whatsapp_url,
+            'whatsapp_url' => $phoneVisible ? $this->whatsapp_url : null,
             'avatar_url' => $this->avatar_url,
             'donor_profile' => [
                 'blood_group' => $this->donorProfile->blood_group,

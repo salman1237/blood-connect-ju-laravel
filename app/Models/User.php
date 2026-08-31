@@ -43,6 +43,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'phone',
         'phone_has_whatsapp',
         'whatsapp_number',
+        'phone_visibility',
         'google_id',
         'avatar_url',
     ];
@@ -113,6 +114,18 @@ class User extends Authenticatable implements MustVerifyEmail
                 return "https://wa.me/{$digits}";
             },
         );
+    }
+
+    /**
+     * The single gate every phone/WhatsApp display goes through — web
+     * Blade views and both API donor Resources alike — so "admin only"
+     * can't drift out of sync between the handful of places a donor's
+     * number is ever shown. $viewer is nullable so call sites don't need
+     * their own auth()->check() guard first.
+     */
+    public function phoneVisibleTo(?User $viewer): bool
+    {
+        return $this->phone_visibility === 'public' || ($viewer !== null && $viewer->isAdmin());
     }
 
     public function donorProfile(): HasOne
@@ -228,6 +241,17 @@ class User extends Authenticatable implements MustVerifyEmail
             'date_of_birth' => $validated['date_of_birth'],
             'phone_has_whatsapp' => $hasWhatsapp,
             'whatsapp_number' => $hasWhatsapp ? null : ($validated['whatsapp_number'] ?? null),
+            // Preserves the existing value when omitted, unlike the fields
+            // above that reset to null/a default — this one is privacy-
+            // sensitive (an older client build that hasn't picked up this
+            // field yet must never silently undo someone's "admin only"
+            // choice just because they saved an unrelated field). The
+            // trailing ?? 'public' covers a freshly created, not-yet-
+            // refreshed model instance, whose in-memory attribute can be
+            // null even though the column's own DB-side default is
+            // 'public' — Eloquent doesn't pull server-assigned defaults
+            // back into memory after an insert unless you ask it to.
+            'phone_visibility' => $validated['phone_visibility'] ?? $this->phone_visibility ?? 'public',
         ];
 
         // Never let a verifier/admin accidentally demote themselves just by

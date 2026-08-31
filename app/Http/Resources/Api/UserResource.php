@@ -31,6 +31,7 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'whatsapp_number' => $this->whatsapp_number,
             'phone_has_whatsapp' => $this->phone_has_whatsapp,
+            'phone_visibility' => $this->phone_visibility,
             'whatsapp_url' => $this->whatsapp_url,
             'avatar_url' => $this->avatar_url,
             'email_notifications_enabled' => $this->email_notifications_enabled,

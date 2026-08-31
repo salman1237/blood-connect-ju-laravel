@@ -134,6 +134,15 @@
             <x-input-error :messages="$errors->get('whatsapp_number')" />
         </div>
 
+        <label class="flex items-center justify-between gap-3 rounded-xl border border-border p-4">
+            <span>
+                <span class="block text-sm font-medium">Hide my number from other users</span>
+                <span class="text-xs text-muted-foreground">Only admins can see it. Your WhatsApp button stays hidden from everyone else too.</span>
+            </span>
+            <input type="hidden" name="phone_visibility" value="public">
+            <input type="checkbox" name="phone_visibility" value="admin_only" {{ old('phone_visibility', $user->phone_visibility) === 'admin_only' ? 'checked' : '' }} class="size-5 shrink-0 rounded border-border text-primary focus:ring-primary">
+        </label>
+
         <label class="flex items-center justify-between rounded-xl border border-border p-4">
             <div>
                 <p class="text-sm font-medium">Available to donate</p>

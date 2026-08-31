@@ -25,7 +25,7 @@
                 <span class="text-xs text-muted-foreground">Trust score: {{ $donor->donorProfile->trust_score }}</span>
             </div>
 
-            @if ($donor->whatsapp_url)
+            @if ($donor->phoneVisibleTo(auth()->user()) && $donor->whatsapp_url)
                 <a href="{{ $donor->whatsapp_url }}" target="_blank" rel="noopener"
                    class="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#25D366] text-sm font-medium text-white transition hover:opacity-90">
                     <x-whatsapp-icon class="size-4" />
@@ -67,14 +67,23 @@
                     <dt class="text-xs text-muted-foreground">Department</dt>
                     <dd class="font-medium">{{ $donor->department ?? '—' }}</dd>
                 </div>
+                @php $phoneVisible = $donor->phoneVisibleTo(auth()->user()); @endphp
                 <div>
                     <dt class="text-xs text-muted-foreground">Phone</dt>
-                    <dd class="font-medium">{{ $donor->phone ?? '—' }}</dd>
+                    <dd class="font-medium">
+                        @if (! $phoneVisible)
+                            <span class="text-muted-foreground">Hidden by donor</span>
+                        @else
+                            {{ $donor->phone ?? '—' }}
+                        @endif
+                    </dd>
                 </div>
                 <div>
                     <dt class="text-xs text-muted-foreground">WhatsApp</dt>
                     <dd class="font-medium">
-                        @if ($donor->whatsapp_url)
+                        @if (! $phoneVisible)
+                            <span class="text-muted-foreground">Hidden by donor</span>
+                        @elseif ($donor->whatsapp_url)
                             <a href="{{ $donor->whatsapp_url }}" target="_blank" rel="noopener" class="text-primary underline">
                                 {{ $donor->phone_has_whatsapp ? $donor->phone : $donor->whatsapp_number }}
                             </a>

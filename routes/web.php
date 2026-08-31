@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AdminDonorController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\BloodRequestController;
@@ -81,6 +82,11 @@ Route::middleware(['auth', 'verified', 'role:verifier,admin'])->prefix('verify')
 Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', AdminDashboardController::class)->name('dashboard');
     Route::resource('users', AdminUserController::class)->except(['create', 'store']);
+    Route::get('/donors/create', [AdminDonorController::class, 'create'])->name('donors.create');
+    Route::post('/donors', [AdminDonorController::class, 'store'])->name('donors.store');
+    Route::get('/donors/import', [AdminDonorController::class, 'import'])->name('donors.import');
+    Route::post('/donors/import', [AdminDonorController::class, 'processImport'])->name('donors.import.store');
+    Route::get('/donors/import/template', [AdminDonorController::class, 'downloadTemplate'])->name('donors.import.template');
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
     Route::post('/reports/{report}/review', [AdminReportController::class, 'review'])->name('reports.review');
     Route::post('/reports/{report}/dismiss', [AdminReportController::class, 'dismiss'])->name('reports.dismiss');

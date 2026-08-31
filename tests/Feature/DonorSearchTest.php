@@ -171,4 +171,52 @@ class DonorSearchTest extends TestCase
         $response->assertOk();
         $response->assertSee('—');
     }
+
+    public function test_a_regular_viewer_cannot_see_an_admin_only_donors_phone(): void
+    {
+        $viewer = $this->onboardedUser();
+        $donor = $this->onboardedUser([
+            'phone' => '01712345678',
+            'phone_has_whatsapp' => true,
+            'phone_visibility' => 'admin_only',
+        ]);
+
+        $response = $this->actingAs($viewer)->get(route('donors.show', $donor));
+
+        $response->assertOk();
+        $response->assertDontSee('01712345678');
+        $response->assertDontSee('wa.me');
+        $response->assertSee('Hidden by donor');
+    }
+
+    public function test_an_admin_can_see_an_admin_only_donors_phone(): void
+    {
+        $admin = $this->onboardedUser(['role' => 'admin']);
+        $donor = $this->onboardedUser([
+            'phone' => '01712345678',
+            'phone_has_whatsapp' => true,
+            'phone_visibility' => 'admin_only',
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('donors.show', $donor));
+
+        $response->assertOk();
+        $response->assertSee('01712345678');
+        $response->assertSee('https://wa.me/8801712345678', false);
+    }
+
+    public function test_an_admin_only_donors_whatsapp_button_is_hidden_from_the_directory_and_matching_donors_list(): void
+    {
+        $viewer = $this->onboardedUser();
+        $this->onboardedUser([
+            'phone' => '01712345678',
+            'phone_has_whatsapp' => true,
+            'phone_visibility' => 'admin_only',
+        ]);
+
+        $response = $this->actingAs($viewer)->get('/donors');
+
+        $response->assertOk();
+        $response->assertDontSee('wa.me');
+    }
 }

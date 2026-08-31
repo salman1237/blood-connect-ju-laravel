@@ -135,4 +135,41 @@ class DonorTest extends TestCase
 
         $response->assertUnauthorized();
     }
+
+    public function test_a_regular_viewer_gets_null_phone_fields_for_an_admin_only_donor(): void
+    {
+        $viewer = $this->onboardedUser();
+        $donor = $this->onboardedUser([
+            'phone' => '01712345678',
+            'phone_has_whatsapp' => true,
+            'phone_visibility' => 'admin_only',
+        ]);
+
+        $detail = $this->actingAs($viewer, 'sanctum')->getJson("/api/v1/donors/{$donor->id}");
+        $detail->assertOk();
+        $detail->assertJsonPath('phone', null);
+        $detail->assertJsonPath('whatsapp_number', null);
+        $detail->assertJsonPath('whatsapp_url', null);
+
+        $list = $this->actingAs($viewer, 'sanctum')->getJson('/api/v1/donors');
+        $list->assertOk();
+        $row = collect($list->json())->firstWhere('id', $donor->id);
+        $this->assertNull($row['whatsapp_url']);
+    }
+
+    public function test_an_admin_gets_real_phone_fields_for_an_admin_only_donor(): void
+    {
+        $admin = $this->onboardedUser(['role' => 'admin']);
+        $donor = $this->onboardedUser([
+            'phone' => '01712345678',
+            'phone_has_whatsapp' => true,
+            'phone_visibility' => 'admin_only',
+        ]);
+
+        $response = $this->actingAs($admin, 'sanctum')->getJson("/api/v1/donors/{$donor->id}");
+
+        $response->assertOk();
+        $response->assertJsonPath('phone', '01712345678');
+        $response->assertJsonPath('whatsapp_url', 'https://wa.me/8801712345678');
+    }
 }

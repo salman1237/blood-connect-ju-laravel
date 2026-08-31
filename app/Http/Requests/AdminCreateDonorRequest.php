@@ -7,40 +7,37 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Shared by the onboarding wizard (first-time setup) and the profile page
- * (editing afterward) so the two never drift out of sync with each other.
+ * Account-level shape borrowed from RegistrationValidation (minus
+ * password — an admin-created account gets a random one, see
+ * AdminDonorController::store()) combined with the donor-profile shape
+ * from UpdateDonorProfileRequest, so an admin-entered donor ends up
+ * validated the same way a self-registered one would be.
  */
-class UpdateDonorProfileRequest extends FormRequest
+class AdminCreateDonorRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->isAdmin();
     }
 
     public function rules(): array
     {
-        // Falls back to the current role so hall/batch requirements are
-        // still evaluated correctly even when the role field isn't part of
-        // this particular submission (verifiers/admins never see it).
-        $role = $this->input('role', $this->user()->role);
-        $isStudent = $role === 'student';
+        $isStudent = $this->input('role') === 'student';
         $allDepartments = collect(config('juniv.departments'))->flatten()->all();
 
         return [
-            'blood_group' => ['required', Rule::in(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])],
-            'role' => [$this->user()->canSelfServiceRole() ? 'required' : 'nullable', Rule::in(['student', 'staff', 'faculty'])],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'role' => ['required', Rule::in(['student', 'staff', 'faculty'])],
             'gender' => ['required', Rule::in(['male', 'female', 'other'])],
             'date_of_birth' => ['required', 'date', 'before:today', 'after:1900-01-01'],
+            'blood_group' => ['required', Rule::in(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'])],
             'department' => ['required', Rule::in($allDepartments)],
             'hall' => [$isStudent ? 'required' : 'nullable', Rule::in(config('juniv.halls'))],
             'batch' => [$isStudent ? 'required' : 'nullable', Rule::in(User::batchOptions())],
             'phone' => ['nullable', 'string', 'max:30'],
             'phone_has_whatsapp' => ['boolean'],
             'whatsapp_number' => ['nullable', 'string', 'max:30'],
-            // Not 'required' — updateDonorProfile() already defaults a
-            // missing value to 'public', same graceful-fallback shape as
-            // phone_has_whatsapp above, so an older client build that
-            // hasn't picked up this field yet doesn't break.
             'phone_visibility' => ['nullable', Rule::in(['public', 'admin_only'])],
             'is_available' => ['boolean'],
             'last_donation_date' => ['nullable', 'date', 'before_or_equal:today'],

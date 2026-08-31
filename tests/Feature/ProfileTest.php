@@ -73,6 +73,43 @@ class ProfileTest extends TestCase
         $this->assertFalse($user->donorProfile->is_available);
     }
 
+    public function test_phone_visibility_can_be_set_to_admin_only(): void
+    {
+        $user = User::factory()->create(['role' => 'staff']);
+        DonorProfile::factory()->for($user)->create();
+
+        $response = $this->actingAs($user)->patch('/profile/donor', [
+            'blood_group' => 'O-',
+            'role' => 'staff',
+            'gender' => 'male',
+            'date_of_birth' => '1990-01-01',
+            'department' => 'Physics',
+            'phone_visibility' => 'admin_only',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $this->assertSame('admin_only', $user->refresh()->phone_visibility);
+    }
+
+    public function test_phone_visibility_is_preserved_when_not_submitted(): void
+    {
+        // Regression: an older client build that hasn't picked up this
+        // field yet must never silently undo someone's "admin only" choice
+        // just because they saved an unrelated field.
+        $user = User::factory()->create(['role' => 'staff', 'phone_visibility' => 'admin_only']);
+        DonorProfile::factory()->for($user)->create();
+
+        $this->actingAs($user)->patch('/profile/donor', [
+            'blood_group' => 'O-',
+            'role' => 'staff',
+            'gender' => 'male',
+            'date_of_birth' => '1990-01-01',
+            'department' => 'Physics',
+        ]);
+
+        $this->assertSame('admin_only', $user->refresh()->phone_visibility);
+    }
+
     public function test_unchecking_availability_actually_turns_it_off(): void
     {
         // Regression: unchecked checkboxes don't submit at all, so without

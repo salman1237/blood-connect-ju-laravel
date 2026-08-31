@@ -5,6 +5,11 @@
         <x-auth-session-status status="User deactivated." class="mb-5" />
     @endif
 
+    <div class="mb-4 flex flex-wrap items-center gap-2">
+        <x-button :href="route('admin.donors.create')" size="sm">Add donor</x-button>
+        <x-button :href="route('admin.donors.import')" size="sm" variant="outline">Bulk import</x-button>
+    </div>
+
     <form method="GET" action="{{ route('admin.users.index') }}" class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <x-text-input type="search" name="search" placeholder="Search by name or email" :value="$search" class="sm:max-w-xs" />
         <x-scroll-fade class="flex gap-1.5 overflow-x-auto pb-1">

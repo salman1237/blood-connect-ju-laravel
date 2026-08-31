@@ -39,10 +39,11 @@ class DonorSearchController extends Controller
 
     /**
      * Public-ish donor profile — visible to any authenticated user (browsing
-     * the directory is the whole point), but deliberately doesn't expose
-     * raw email/phone. Coordination happens through the app (a request's
-     * contact_method, or responding/being selected), not by cold-contacting
-     * a donor found by browsing.
+     * the directory is the whole point), but deliberately never exposes raw
+     * email, and only exposes phone/WhatsApp when the donor's own
+     * phone_visibility says so (see User::phoneVisibleTo(), which the view
+     * itself checks — this controller doesn't need to filter anything out,
+     * the model's already-hidden data just isn't queried differently here).
      */
     public function show(User $donor): View
     {
