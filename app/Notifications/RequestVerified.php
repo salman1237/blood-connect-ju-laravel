@@ -6,6 +6,7 @@ use App\Models\BloodRequest;
 use App\Notifications\Channels\FcmChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -23,7 +24,13 @@ class RequestVerified extends Notification implements ShouldQueue
     {
         $channels = $notifiable->wantsEmailNotifications() ? ['database', 'mail'] : ['database'];
 
-        return [...$channels, FcmChannel::class];
+        return [...$channels, 'broadcast', FcmChannel::class];
+    }
+
+    /** Live-updates the notification bell (private-App.Models.User.{id}) — same payload as the database record. */
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage($this->toArray($notifiable));
     }
 
     /**

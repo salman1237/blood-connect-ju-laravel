@@ -54,23 +54,30 @@
         </x-scroll-fade>
     </div>
 
-    @if ($requests->isEmpty())
-        <div class="surface-panel flex flex-col items-center px-6 py-14 text-center">
-            <span class="flex size-14 items-center justify-center rounded-2xl bg-surface text-muted-foreground">
-                <x-icon name="inbox" class="size-6" />
-            </span>
-            <h3 class="mt-4 text-base font-semibold">No active requests right now</h3>
-            <p class="mt-1.5 max-w-sm text-sm text-muted-foreground">
-                That's good news. We'll notify you the moment someone near your hall needs blood.
-            </p>
-        </div>
-    @else
-        <ul class="space-y-3">
-            @foreach ($requests as $request)
-                <li>
-                    @include('partials.request-card', ['request' => $request])
-                </li>
-            @endforeach
-        </ul>
-    @endif
+    {{-- id="request-feed" is the live-refresh target: a WebSocket signal on
+         the public "requests" channel (see resources/js/echo.js) triggers
+         window.refreshFragment('request-feed'), which refetches this same
+         page and swaps this whole block in, current blood_group/hall
+         filters included (baked into the URL the refetch reuses). --}}
+    <div id="request-feed" x-data x-init="window.Echo && window.Echo.channel('requests').listen('.RequestFeedUpdated', () => refreshFragment('request-feed'))">
+        @if ($requests->isEmpty())
+            <div class="surface-panel flex flex-col items-center px-6 py-14 text-center">
+                <span class="flex size-14 items-center justify-center rounded-2xl bg-surface text-muted-foreground">
+                    <x-icon name="inbox" class="size-6" />
+                </span>
+                <h3 class="mt-4 text-base font-semibold">No active requests right now</h3>
+                <p class="mt-1.5 max-w-sm text-sm text-muted-foreground">
+                    That's good news. We'll notify you the moment someone near your hall needs blood.
+                </p>
+            </div>
+        @else
+            <ul class="space-y-3">
+                @foreach ($requests as $request)
+                    <li>
+                        @include('partials.request-card', ['request' => $request])
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </div>
 </x-app-layout>

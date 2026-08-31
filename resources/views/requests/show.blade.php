@@ -18,6 +18,12 @@
     @endif
 
     <div class="mx-auto max-w-2xl space-y-5">
+        {{-- id="request-activity" is the live-refresh target: a WebSocket
+             signal on this request's own public "request.{id}" channel (see
+             resources/js/echo.js) triggers refreshFragment('request-activity') —
+             covers status/verification changes, new responses, donor
+             selection, and mutual confirmation, all of which land here. --}}
+        <div id="request-activity" x-data x-init="window.Echo && window.Echo.channel('request.{{ $bloodRequest->id }}').listen('.RequestActivityUpdated', () => refreshFragment('request-activity'))">
         <div class="surface-panel p-5 sm:p-6">
             <div class="flex items-start gap-4">
                 <x-blood-drop :group="$bloodRequest->blood_group" size="lg" />
@@ -152,6 +158,7 @@
                 </ul>
             </div>
         @endif
+        </div>
 
         @if ($bloodRequest->patient_context)
             <div class="surface-panel p-5 sm:p-6">

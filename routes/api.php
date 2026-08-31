@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\V1\PushTokenController;
 use App\Http\Controllers\Api\V1\RequestController;
 use App\Http\Controllers\Api\V1\RequestResponseController;
 use App\Http\Controllers\Api\V1\SettingsController;
+use Illuminate\Broadcasting\BroadcastController;
 use Illuminate\Support\Facades\Route;
 
 // Versioned so the Android app can pin to a contract (v1) while the web
@@ -33,6 +34,15 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::middleware(['auth:sanctum', 'active.api'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('/user', [AuthController::class, 'me'])->name('user');
+
+        // Android's own broadcasting-auth endpoint — the default
+        // /broadcasting/auth Laravel registers (via bootstrap/app.php's
+        // withRouting(channels: ...)) uses the 'web' session guard, which
+        // the mobile app has no cookie for. Same shape, just reachable
+        // through this Bearer-token-authenticated group instead, for
+        // subscribing to the private per-user notification channel.
+        Route::post('/broadcasting/auth', [BroadcastController::class, 'authenticate'])
+            ->name('broadcasting.auth');
 
         Route::get('/meta', MetaController::class)->name('meta');
         Route::patch('/donor-profile', [DonorProfileController::class, 'update'])->name('donor-profile.update');

@@ -1,4 +1,10 @@
 <x-app-layout title="Notifications" subtitle="Everything that's happened, in one place">
+    {{-- id="notifications-list" is the live-refresh target — a new
+         notification for this user (private-App.Models.User.{id}, same
+         channel the layout's own unread-badge counter listens on) triggers
+         refreshFragment('notifications-list') so a new item shows up here
+         without a manual reload while this page is open. --}}
+    <div id="notifications-list" x-data x-init="window.Echo && window.__currentUserId && window.Echo.private('App.Models.User.' + window.__currentUserId).notification(() => refreshFragment('notifications-list'))">
     <div class="mb-4 flex items-center justify-between">
         <p class="text-sm text-muted-foreground">{{ $notifications->total() }} total</p>
         @if ($notifications->contains(fn ($notification) => $notification->read_at === null))
@@ -48,4 +54,5 @@
             {{ $notifications->links() }}
         </div>
     @endif
+    </div>
 </x-app-layout>

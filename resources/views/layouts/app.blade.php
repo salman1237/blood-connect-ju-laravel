@@ -5,6 +5,24 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
+        @auth
+            {{-- Read before the @vite module script below runs (see resources/js/echo.js)
+                 — only the public app key/host/port, never REVERB_APP_SECRET. --}}
+            <script>
+                window.__currentUserId = {{ auth()->id() }};
+                window.__reverbConfig = @if (config('broadcasting.connections.reverb.key'))
+                    {{ Illuminate\Support\Js::from([
+                        'key' => config('broadcasting.connections.reverb.key'),
+                        'host' => config('broadcasting.connections.reverb.options.host'),
+                        'port' => config('broadcasting.connections.reverb.options.port'),
+                        'scheme' => config('broadcasting.connections.reverb.options.scheme'),
+                    ]) }}
+                @else
+                    null
+                @endif;
+            </script>
+        @endauth
+
         <title>{{ isset($title) ? $title . ' — ' . config('app.name') : config('app.name') }}</title>
 
         <link rel="icon" type="image/png" sizes="48x48" href="{{ asset('favicon-48x48.png') }}">
@@ -18,7 +36,18 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="min-h-screen overflow-x-hidden bg-background font-sans text-foreground antialiased">
+    @php
+        // Computed up here, before <body>, so its x-data attribute below
+        // (which needs the initial count to seed Alpine state) can read it —
+        // the rest of this nav setup stays in its own @php block further
+        // down, unchanged.
+        $unreadNotificationsCount = Route::has('notifications.index') ? auth()->user()->unreadNotifications()->count() : 0;
+    @endphp
+    <body
+        class="min-h-screen overflow-x-hidden bg-background font-sans text-foreground antialiased"
+        x-data="{ unreadCount: {{ $unreadNotificationsCount }} }"
+        x-init="window.Echo && window.__currentUserId && window.Echo.private('App.Models.User.' + window.__currentUserId).notification(() => unreadCount++)"
+    >
         @php
             $primaryNav = [
                 ['route' => 'dashboard', 'label' => __('nav.home'), 'icon' => 'home'],
@@ -38,7 +67,6 @@
                 ['route' => 'admin.dashboard', 'label' => __('nav.admin_dashboard'), 'icon' => 'bar-chart', 'visible' => auth()->user()->isAdmin()],
             ];
             $visibleSecondaryNav = collect($secondaryNav)->filter(fn ($item) => $item['visible'] && Route::has($item['route']));
-            $unreadNotificationsCount = Route::has('notifications.index') ? auth()->user()->unreadNotifications()->count() : 0;
         @endphp
 
         <aside class="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar p-4 lg:flex">
@@ -51,8 +79,12 @@
                            class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors {{ request()->routeIs($item['route']) ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent/60' }}">
                             <x-icon :name="$item['icon']" class="size-4" />
                             {{ $item['label'] }}
-                            @if ($item['route'] === 'notifications.index' && $unreadNotificationsCount > 0)
-                                <span class="ml-auto flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">{{ min($unreadNotificationsCount, 9) }}{{ $unreadNotificationsCount > 9 ? '+' : '' }}</span>
+                            @if ($item['route'] === 'notifications.index')
+                                <span
+                                    x-show="unreadCount > 0"
+                                    x-text="unreadCount > 9 ? '9+' : unreadCount"
+                                    class="ml-auto flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground"
+                                ></span>
                             @endif
                         </a>
                     @endif
@@ -117,8 +149,8 @@
                                class="relative flex flex-1 flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-[10px] font-medium transition-colors {{ request()->routeIs($item['route']) ? 'text-primary' : 'text-muted-foreground' }}">
                                 <span class="relative">
                                     <x-icon :name="$item['icon']" class="size-5" />
-                                    @if ($item['route'] === 'notifications.index' && $unreadNotificationsCount > 0)
-                                        <span class="absolute -right-1 -top-1 size-2 rounded-full bg-primary"></span>
+                                    @if ($item['route'] === 'notifications.index')
+                                        <span x-show="unreadCount > 0" class="absolute -right-1 -top-1 size-2 rounded-full bg-primary"></span>
                                     @endif
                                 </span>
                                 {{ $item['label'] }}

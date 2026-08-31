@@ -1,4 +1,6 @@
 import './bootstrap';
+import './echo';
+import './live-refresh';
 
 import Alpine from 'alpinejs';
 

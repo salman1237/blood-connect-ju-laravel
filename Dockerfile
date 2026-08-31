@@ -1,8 +1,13 @@
 FROM php:8.2-apache
 
-# System dependencies + PHP extensions Laravel needs
+# System dependencies + PHP extensions Laravel needs. supervisor runs
+# Apache/Reverb/the queue worker as sibling processes in this one container
+# (see supervisord.conf) -- this project's Dokploy hosting is one
+# application = one container = one deploy path, so real-time broadcasting
+# and a persistent queue worker are added here rather than as separate
+# Dokploy applications.
 RUN apt-get update && apt-get install -y \
-        git curl libpng-dev libonig-dev libxml2-dev libzip-dev zip unzip default-mysql-client \
+        git curl libpng-dev libonig-dev libxml2-dev libzip-dev zip unzip default-mysql-client supervisor \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
     && a2enmod rewrite \
     && rm -rf /var/lib/apt/lists/*
@@ -45,7 +50,12 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
+COPY supervisord.conf /etc/supervisor/conf.d/blood-connect.conf
+
 EXPOSE 80
+# Reverb's default port -- exposed via its own Dokploy domain (ws.bloodconnectju.org)
+# pointed at this same container/application, separate from the port-80 domains.
+EXPOSE 8080
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["apache2-foreground"]
+CMD ["supervisord", "-n", "-c", "/etc/supervisor/conf.d/blood-connect.conf"]
