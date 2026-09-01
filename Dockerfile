@@ -45,7 +45,14 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction \
 RUN sed -ri -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/*.conf \
     && sed -ri -e 's!/var/www/!/var/www/html/public!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# maatwebsite/excel lazily creates this directory itself the first time
+# anything calls Excel::download() -- pre-creating it here means it's always
+# owned by www-data from the start. Without this, whichever process (or,
+# worse, a root `docker exec` shell used for one-off debugging) happens to
+# touch it first ends up owning it, and Apache's own www-data workers can
+# then fail every subsequent download with a permission error.
+RUN mkdir -p /var/www/html/storage/framework/cache/laravel-excel \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
