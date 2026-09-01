@@ -32,3 +32,47 @@ jobs:
             -H "Content-Type: application/json" \
             -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
             -d "{\"applicationId\":\"${{ secrets.DOKPLOY_APPLICATION_ID }}\"}"
+
+      # application.deploy only enqueues the build and returns immediately —
+      # it doesn't wait for (or report) whether the build actually succeeds.
+      # Without this step a transient failure inside Dokploy (e.g. a flaky
+      # GitHub download during `composer install`) leaves production on the
+      # old image while this workflow still shows all-green. Dokploy tags
+      # each deployment's `description` with "Commit: <sha>" itself (it's
+      # reading the same git history), so polling deployment.all and
+      # matching on this run's own commit SHA reliably finds the right one
+      # even if an earlier attempt for a different commit is still listed.
+      - name: Wait for the Dokploy build to actually finish
+        run: |
+          SHA="${{ github.sha }}"
+          APP_ID="${{ secrets.DOKPLOY_APPLICATION_ID }}"
+          API_KEY="${{ secrets.DOKPLOY_API_KEY }}"
+          DEADLINE=$((SECONDS + 600))
+          echo "Waiting for a Dokploy deployment matching commit $SHA to finish..."
+          while [ $SECONDS -lt $DEADLINE ]; do
+            RESPONSE=$(curl -s "http://89.116.122.118:3000/api/deployment.all?applicationId=$APP_ID" \
+              -H "x-api-key: $API_KEY" || echo '[]')
+            MATCH=$(echo "$RESPONSE" | jq -c --arg sha "$SHA" '[.[] | select(.description // "" | contains($sha))] | first // empty' 2>/dev/null)
+            if [ -n "$MATCH" ]; then
+              STATUS=$(echo "$MATCH" | jq -r '.status')
+              case "$STATUS" in
+                done)
+                  echo "Deployment succeeded."
+                  exit 0
+                  ;;
+                error)
+                  echo "Deployment failed:"
+                  echo "$MATCH" | jq .
+                  exit 1
+                  ;;
+                *)
+                  echo "Deployment status: $STATUS -- still waiting..."
+                  ;;
+              esac
+            else
+              echo "No deployment recorded yet for commit $SHA -- still waiting..."
+            fi
+            sleep 10
+          done
+          echo "Timed out waiting for the Dokploy deployment to finish."
+          exit 1
