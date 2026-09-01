@@ -121,6 +121,9 @@
         </main>
 
         <footer class="border-t border-border py-8 text-center text-xs text-muted-foreground">
+            <div class="mb-4">
+                @include('partials.org-credit', ['setting' => $orgSetting])
+            </div>
             {{ __('landing.footer') }}
         </footer>
     </div>

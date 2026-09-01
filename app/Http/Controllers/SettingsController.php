@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -10,7 +11,7 @@ class SettingsController extends Controller
 {
     public function edit(): View
     {
-        return view('settings');
+        return view('settings', ['orgSetting' => AppSetting::current()]);
     }
 
     public function updateNotifications(Request $request): RedirectResponse

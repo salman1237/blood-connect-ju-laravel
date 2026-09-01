@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSetting;
 use App\Models\BloodRequest;
 use App\Models\DonorProfile;
 use Illuminate\Http\RedirectResponse;
@@ -33,6 +34,7 @@ class LandingController extends Controller
             'fulfilledCount' => BloodRequest::where('status', 'fulfilled')->count(),
             'avgResponseMinutes' => $avgResponseMinutes,
             'hallsAndDepartmentsCount' => count(config('juniv.halls')) + collect(config('juniv.departments'))->flatten()->count(),
+            'orgSetting' => AppSetting::current(),
         ]);
     }
 }

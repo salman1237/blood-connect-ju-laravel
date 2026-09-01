@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminDonorController;
 use App\Http\Controllers\AdminReportController;
+use App\Http\Controllers\AdminSettingsController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\BloodRequestController;
 use App\Http\Controllers\DashboardController;
@@ -87,6 +88,10 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::get('/donors/import', [AdminDonorController::class, 'import'])->name('donors.import');
     Route::post('/donors/import', [AdminDonorController::class, 'processImport'])->name('donors.import.store');
     Route::get('/donors/import/template', [AdminDonorController::class, 'downloadTemplate'])->name('donors.import.template');
+    Route::get('/settings', [AdminSettingsController::class, 'edit'])->name('settings.edit');
+    Route::patch('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
+    Route::post('/settings/logo', [AdminSettingsController::class, 'updateLogo'])->name('settings.logo.update');
+    Route::delete('/settings/logo', [AdminSettingsController::class, 'destroyLogo'])->name('settings.logo.destroy');
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
     Route::post('/reports/{report}/review', [AdminReportController::class, 'review'])->name('reports.review');
     Route::post('/reports/{report}/dismiss', [AdminReportController::class, 'dismiss'])->name('reports.dismiss');

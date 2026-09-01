@@ -37,5 +37,10 @@
                 </form>
             </div>
         </div>
+
+        <div class="surface-panel p-5 sm:p-6">
+            <x-section-title title="About" />
+            @include('partials.org-credit', ['setting' => $orgSetting])
+        </div>
     </div>
 </x-app-layout>

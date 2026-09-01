@@ -8,6 +8,7 @@
             @endif
         </x-button>
         <x-button :href="route('verify.queue')" variant="outline" size="sm">Verifier queue</x-button>
+        <x-button :href="route('admin.settings.edit')" variant="outline" size="sm">Site settings</x-button>
     </div>
 
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
