@@ -20,14 +20,18 @@ class AdminSettingsController extends Controller
         return view('admin.settings.edit', ['setting' => AppSetting::current()]);
     }
 
-    public function update(Request $request): RedirectResponse
+    /**
+     * $which is 'funded_by' or 'maintained_by' -- each credit line is its
+     * own independent form (see admin/settings/edit.blade.php), not one
+     * combined form for both, so saving one never touches the other.
+     */
+    public function update(Request $request, string $which): RedirectResponse
     {
         $validated = $request->validate([
-            'funded_by' => ['nullable', 'string', 'max:255'],
-            'maintained_by' => ['nullable', 'string', 'max:255'],
+            'value' => ['nullable', 'string', 'max:255'],
         ]);
 
-        AppSetting::current()->update($validated);
+        AppSetting::current()->update([$which => $validated['value']]);
 
         return redirect()->route('admin.settings.edit')->with('status', 'settings-updated');
     }

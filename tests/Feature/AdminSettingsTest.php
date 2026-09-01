@@ -32,28 +32,38 @@ class AdminSettingsTest extends TestCase
         $this->assertNull($setting->maintained_by_logo_url);
     }
 
-    public function test_admin_can_update_the_org_credit(): void
+    public function test_admin_can_update_the_funded_by_line_independently(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
 
-        $response = $this->actingAs($admin)->patch(route('admin.settings.update'), [
-            'funded_by' => 'A Different Funder',
-            'maintained_by' => 'A Different Maintainer',
+        $response = $this->actingAs($admin)->patch(route('admin.settings.update', 'funded_by'), [
+            'value' => 'A Different Funder',
         ]);
 
         $response->assertRedirect(route('admin.settings.edit'));
         $this->assertSame('A Different Funder', AppSetting::current()->funded_by);
+        // Untouched -- proves the two lines really are independent, not one combined form.
+        $this->assertSame('Badhan, Jahangirnagar University', AppSetting::current()->maintained_by);
+    }
+
+    public function test_admin_can_update_the_maintained_by_line_independently(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->patch(route('admin.settings.update', 'maintained_by'), [
+            'value' => 'A Different Maintainer',
+        ]);
+
+        $response->assertRedirect(route('admin.settings.edit'));
         $this->assertSame('A Different Maintainer', AppSetting::current()->maintained_by);
+        $this->assertSame("Jahangirnagar University Central Students' Union (JUCSU)", AppSetting::current()->funded_by);
     }
 
     public function test_clearing_a_field_hides_that_line(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
 
-        $this->actingAs($admin)->patch(route('admin.settings.update'), [
-            'funded_by' => '',
-            'maintained_by' => 'Still Set',
-        ]);
+        $this->actingAs($admin)->patch(route('admin.settings.update', 'funded_by'), ['value' => '']);
 
         $this->assertNull(AppSetting::current()->funded_by);
 
@@ -61,7 +71,16 @@ class AdminSettingsTest extends TestCase
         // check the still-admin-authenticated Settings page instead.
         $response = $this->get(route('settings.edit'));
         $response->assertDontSee('Implemented &amp; funded by', false);
-        $response->assertSee('Still Set');
+        $response->assertSee('Badhan, Jahangirnagar University');
+    }
+
+    public function test_an_invalid_field_slot_404s(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->patch('/admin/settings/something-else', ['value' => 'x']);
+
+        $response->assertNotFound();
     }
 
     public function test_admin_can_upload_and_remove_the_funded_by_logo(): void

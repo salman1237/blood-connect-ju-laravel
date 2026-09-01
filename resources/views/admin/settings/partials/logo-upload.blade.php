@@ -1,10 +1,10 @@
-{{-- $which: 'funded_by' or 'maintained_by' -- $label: display name -- $logoUrl: current logo, if any. --}}
+{{-- $which: 'funded_by' or 'maintained_by' -- $logoUrl: current logo, if any. --}}
 <div>
-    <p class="mb-2 text-sm font-medium">{{ $label }}</p>
+    <p class="mb-2 text-sm font-medium">Logo (optional)</p>
 
     <div class="flex items-center gap-4">
         @if ($logoUrl)
-            <img src="{{ $logoUrl }}" alt="{{ $label }}" class="size-16 shrink-0 rounded-lg border border-border object-contain">
+            <img src="{{ $logoUrl }}" alt="" class="size-16 shrink-0 rounded-lg border border-border object-contain">
         @else
             <div class="flex size-16 shrink-0 items-center justify-center rounded-lg border border-dashed border-border text-xs text-muted-foreground">
                 None

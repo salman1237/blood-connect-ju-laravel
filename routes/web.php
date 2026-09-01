@@ -89,7 +89,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::post('/donors/import', [AdminDonorController::class, 'processImport'])->name('donors.import.store');
     Route::get('/donors/import/template', [AdminDonorController::class, 'downloadTemplate'])->name('donors.import.template');
     Route::get('/settings', [AdminSettingsController::class, 'edit'])->name('settings.edit');
-    Route::patch('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
+    Route::patch('/settings/{which}', [AdminSettingsController::class, 'update'])->whereIn('which', ['funded_by', 'maintained_by'])->name('settings.update');
     Route::post('/settings/logo/{which}', [AdminSettingsController::class, 'updateLogo'])->whereIn('which', ['funded_by', 'maintained_by'])->name('settings.logo.update');
     Route::delete('/settings/logo/{which}', [AdminSettingsController::class, 'destroyLogo'])->whereIn('which', ['funded_by', 'maintained_by'])->name('settings.logo.destroy');
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
