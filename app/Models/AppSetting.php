@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use InvalidArgumentException;
 
 /**
  * A singleton row -- one record ever -- holding the org credit shown on the
@@ -16,10 +17,21 @@ use Illuminate\Support\Facades\Storage;
  */
 class AppSetting extends Model
 {
+    /**
+     * The two logo slots -- one per credit line (JUCSU's own logo next to
+     * "funded by", Badhan's own logo next to "maintained by"), not one
+     * shared logo for both.
+     */
+    private const LOGO_COLUMNS = [
+        'funded_by' => 'funded_by_logo_url',
+        'maintained_by' => 'maintained_by_logo_url',
+    ];
+
     protected $fillable = [
         'funded_by',
         'maintained_by',
-        'logo_url',
+        'funded_by_logo_url',
+        'maintained_by_logo_url',
     ];
 
     protected static function booted(): void
@@ -36,29 +48,40 @@ class AppSetting extends Model
     /**
      * Mirrors User::updateAvatar() -- delete whatever was there before so
      * replaced uploads don't pile up in storage, then store the new one.
+     * $which is 'funded_by' or 'maintained_by', matching the route segment
+     * AdminSettingsController passes straight through.
      */
-    public function updateLogo(UploadedFile $file): void
+    public function updateLogo(string $which, UploadedFile $file): void
     {
-        $this->deleteStoredLogoIfLocal();
+        $column = $this->logoColumn($which);
+
+        $this->deleteStoredFileIfLocal($this->$column);
 
         $path = $file->store('org', 'public');
 
-        $this->update(['logo_url' => Storage::disk('public')->url($path)]);
+        $this->update([$column => Storage::disk('public')->url($path)]);
     }
 
-    public function removeLogo(): void
+    public function removeLogo(string $which): void
     {
-        $this->deleteStoredLogoIfLocal();
+        $column = $this->logoColumn($which);
 
-        $this->update(['logo_url' => null]);
+        $this->deleteStoredFileIfLocal($this->$column);
+
+        $this->update([$column => null]);
     }
 
-    private function deleteStoredLogoIfLocal(): void
+    private function logoColumn(string $which): string
+    {
+        return self::LOGO_COLUMNS[$which] ?? throw new InvalidArgumentException("Unknown logo slot: {$which}");
+    }
+
+    private function deleteStoredFileIfLocal(?string $url): void
     {
         $publicBaseUrl = Storage::disk('public')->url('');
 
-        if ($this->logo_url && str_starts_with($this->logo_url, $publicBaseUrl)) {
-            Storage::disk('public')->delete(str_replace($publicBaseUrl, '', $this->logo_url));
+        if ($url && str_starts_with($url, $publicBaseUrl)) {
+            Storage::disk('public')->delete(str_replace($publicBaseUrl, '', $url));
         }
     }
 }

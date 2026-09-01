@@ -9,9 +9,9 @@ use Illuminate\View\View;
 
 /**
  * The org credit shown on the landing page and Settings ("Implemented &
- * funded by...", "Maintained by..."), plus an optional logo -- editable
- * here instead of hardcoded, since who funds/maintains the project can
- * change over time without a code deploy.
+ * funded by...", "Maintained by..."), each with its own optional logo --
+ * editable here instead of hardcoded, since who funds/maintains the project
+ * can change over time without a code deploy.
  */
 class AdminSettingsController extends Controller
 {
@@ -32,20 +32,20 @@ class AdminSettingsController extends Controller
         return redirect()->route('admin.settings.edit')->with('status', 'settings-updated');
     }
 
-    public function updateLogo(Request $request): RedirectResponse
+    public function updateLogo(Request $request, string $which): RedirectResponse
     {
         $request->validate([
             'photo' => ['required', 'image', 'max:4096'],
         ]);
 
-        AppSetting::current()->updateLogo($request->file('photo'));
+        AppSetting::current()->updateLogo($which, $request->file('photo'));
 
         return redirect()->route('admin.settings.edit')->with('status', 'logo-updated');
     }
 
-    public function destroyLogo(): RedirectResponse
+    public function destroyLogo(string $which): RedirectResponse
     {
-        AppSetting::current()->removeLogo();
+        AppSetting::current()->removeLogo($which);
 
         return redirect()->route('admin.settings.edit')->with('status', 'logo-removed');
     }

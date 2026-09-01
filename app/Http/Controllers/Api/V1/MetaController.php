@@ -28,8 +28,9 @@ class MetaController extends Controller
             'batches' => User::batchOptions(),
             'org' => [
                 'funded_by' => $setting->funded_by,
+                'funded_by_logo_url' => $setting->funded_by_logo_url,
                 'maintained_by' => $setting->maintained_by,
-                'logo_url' => $setting->logo_url,
+                'maintained_by_logo_url' => $setting->maintained_by_logo_url,
             ],
         ]);
     }

@@ -28,7 +28,8 @@ class AdminSettingsTest extends TestCase
 
         $this->assertSame("Jahangirnagar University Central Students' Union (JUCSU)", $setting->funded_by);
         $this->assertSame('Badhan, Jahangirnagar University', $setting->maintained_by);
-        $this->assertNull($setting->logo_url);
+        $this->assertNull($setting->funded_by_logo_url);
+        $this->assertNull($setting->maintained_by_logo_url);
     }
 
     public function test_admin_can_update_the_org_credit(): void
@@ -63,22 +64,51 @@ class AdminSettingsTest extends TestCase
         $response->assertSee('Still Set');
     }
 
-    public function test_admin_can_upload_and_remove_a_logo(): void
+    public function test_admin_can_upload_and_remove_the_funded_by_logo(): void
     {
         Storage::fake('public');
         $admin = User::factory()->create(['role' => 'admin']);
 
-        $upload = $this->actingAs($admin)->post(route('admin.settings.logo.update'), [
+        $upload = $this->actingAs($admin)->post(route('admin.settings.logo.update', 'funded_by'), [
             'photo' => UploadedFile::fake()->image('logo.png'),
         ]);
 
         $upload->assertRedirect(route('admin.settings.edit'));
-        $this->assertNotNull(AppSetting::current()->logo_url);
+        $this->assertNotNull(AppSetting::current()->funded_by_logo_url);
+        $this->assertNull(AppSetting::current()->maintained_by_logo_url);
 
-        $remove = $this->actingAs($admin)->delete(route('admin.settings.logo.destroy'));
+        $remove = $this->actingAs($admin)->delete(route('admin.settings.logo.destroy', 'funded_by'));
 
         $remove->assertRedirect(route('admin.settings.edit'));
-        $this->assertNull(AppSetting::current()->logo_url);
+        $this->assertNull(AppSetting::current()->funded_by_logo_url);
+    }
+
+    public function test_admin_can_upload_and_remove_the_maintained_by_logo(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $upload = $this->actingAs($admin)->post(route('admin.settings.logo.update', 'maintained_by'), [
+            'photo' => UploadedFile::fake()->image('logo.png'),
+        ]);
+
+        $upload->assertRedirect(route('admin.settings.edit'));
+        $this->assertNotNull(AppSetting::current()->maintained_by_logo_url);
+        $this->assertNull(AppSetting::current()->funded_by_logo_url);
+
+        $remove = $this->actingAs($admin)->delete(route('admin.settings.logo.destroy', 'maintained_by'));
+
+        $remove->assertRedirect(route('admin.settings.edit'));
+        $this->assertNull(AppSetting::current()->maintained_by_logo_url);
+    }
+
+    public function test_an_invalid_logo_slot_404s(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->delete('/admin/settings/logo/something-else');
+
+        $response->assertNotFound();
     }
 
     public function test_landing_page_shows_the_org_credit(): void

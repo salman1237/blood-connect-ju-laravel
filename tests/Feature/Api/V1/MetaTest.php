@@ -17,7 +17,7 @@ class MetaTest extends TestCase
         $response = $this->actingAs($user, 'sanctum')->getJson('/api/v1/meta');
 
         $response->assertOk();
-        $response->assertJsonStructure(['halls', 'departments', 'blood_groups', 'batches', 'org' => ['funded_by', 'maintained_by', 'logo_url']]);
+        $response->assertJsonStructure(['halls', 'departments', 'blood_groups', 'batches', 'org' => ['funded_by', 'funded_by_logo_url', 'maintained_by', 'maintained_by_logo_url']]);
         $this->assertContains('A+', $response->json('blood_groups'));
         $this->assertContains('Rokeya Hall', $response->json('halls'));
         $this->assertSame("Jahangirnagar University Central Students' Union (JUCSU)", $response->json('org.funded_by'));

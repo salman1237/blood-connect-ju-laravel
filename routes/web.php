@@ -90,8 +90,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::get('/donors/import/template', [AdminDonorController::class, 'downloadTemplate'])->name('donors.import.template');
     Route::get('/settings', [AdminSettingsController::class, 'edit'])->name('settings.edit');
     Route::patch('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
-    Route::post('/settings/logo', [AdminSettingsController::class, 'updateLogo'])->name('settings.logo.update');
-    Route::delete('/settings/logo', [AdminSettingsController::class, 'destroyLogo'])->name('settings.logo.destroy');
+    Route::post('/settings/logo/{which}', [AdminSettingsController::class, 'updateLogo'])->whereIn('which', ['funded_by', 'maintained_by'])->name('settings.logo.update');
+    Route::delete('/settings/logo/{which}', [AdminSettingsController::class, 'destroyLogo'])->whereIn('which', ['funded_by', 'maintained_by'])->name('settings.logo.destroy');
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
     Route::post('/reports/{report}/review', [AdminReportController::class, 'review'])->name('reports.review');
     Route::post('/reports/{report}/dismiss', [AdminReportController::class, 'dismiss'])->name('reports.dismiss');
