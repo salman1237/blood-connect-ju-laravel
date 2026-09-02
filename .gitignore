@@ -24,3 +24,7 @@ Homestead.yaml
 Thumbs.db
 client_secret_*.json
 /.claude
+
+# Local Play Store submission prep -- real user screenshots and (eventually)
+# a signing keystore, never meant to be committed to the app's own repo.
+/play-store-submission
