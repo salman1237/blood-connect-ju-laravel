@@ -41,6 +41,9 @@
         <div class="surface-panel p-5 sm:p-6">
             <x-section-title title="About" />
             @include('partials.org-credit', ['setting' => $orgSetting])
+            <div class="mt-4 text-center">
+                <a href="{{ route('privacy') }}" class="text-xs text-primary underline">Privacy Policy</a>
+            </div>
         </div>
     </div>
 </x-app-layout>

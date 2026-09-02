@@ -80,7 +80,8 @@
             <x-button type="submit" size="lg" class="w-full">Create account</x-button>
 
             <p class="text-center text-xs text-muted-foreground">
-                By signing up you agree to donate only when medically eligible.
+                By signing up you agree to donate only when medically eligible,
+                and to our <a href="{{ route('privacy') }}" target="_blank" class="underline hover:text-foreground">Privacy Policy</a>.
             </p>
         </form>
     </x-auth-card>

@@ -125,6 +125,9 @@
                 @include('partials.org-credit', ['setting' => $orgSetting])
             </div>
             {{ __('landing.footer') }}
+            <div class="mt-2">
+                <a href="{{ route('privacy') }}" class="underline hover:text-foreground">Privacy Policy</a>
+            </div>
         </footer>
     </div>
 </x-guest-layout>
