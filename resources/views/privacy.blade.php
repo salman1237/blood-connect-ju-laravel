@@ -67,7 +67,7 @@
             <h2 class="mt-8 text-lg font-semibold">Contact</h2>
             <p class="mt-2">
                 Questions about this policy or your data can be sent to
-                <a href="mailto:support@bloodconnectju.org" class="text-primary underline">support@bloodconnectju.org</a>.
+                <a href="mailto:salmanahmed382.jubair@gmail.com" class="text-primary underline">salmanahmed382.jubair@gmail.com</a>.
             </p>
         </main>
     </div>
