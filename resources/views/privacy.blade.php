@@ -61,8 +61,40 @@
                 <li>You can edit or remove most of your profile information at any time from your account settings</li>
                 <li>You can turn your phone number's visibility to "admins only" at any time</li>
                 <li>You can turn off email notifications while keeping in-app/push notifications</li>
-                <li>You can permanently delete your account at any time — this removes your profile, donation history, and posted requests. This can't be undone</li>
             </ul>
+
+            <h2 class="mt-8 text-lg font-semibold">Account &amp; data deletion</h2>
+            <p class="mt-2">
+                You can permanently delete your account at any time, directly from the app — no
+                need to contact us first.
+            </p>
+            <p class="mt-2"><strong>How:</strong></p>
+            <ul class="mt-2 list-disc space-y-1 pl-5">
+                <li>On the web: sign in at <a href="{{ route('landing') }}" class="text-primary underline">bloodconnectju.org</a> → Profile → scroll to "Delete account"</li>
+                <li>On Android: open the app → Profile → scroll to "Danger zone" → Delete account</li>
+            </ul>
+            <p class="mt-2">You'll be asked to confirm your password before the deletion goes through.</p>
+            <p class="mt-2"><strong>What gets deleted:</strong> everything tied to your account, immediately and permanently —</p>
+            <ul class="mt-2 list-disc space-y-1 pl-5">
+                <li>Your profile (name, email, phone, blood group, hall/department, photo, and every other field you filled in)</li>
+                <li>Your donor profile and donation history</li>
+                <li>Every blood request you posted</li>
+                <li>Every response you made to someone else's request</li>
+                <li>Badges you earned</li>
+                <li>Your push-notification device token</li>
+            </ul>
+            <p class="mt-2">
+                This is a hard delete, not a deactivation — your account row and everything linked
+                to it are removed from our database outright, not just hidden. It can't be undone,
+                and we can't recover it for you afterward, so make sure it's what you want before
+                confirming. If you signed in with Google, deleting your Blood Connect JU account
+                does not touch your Google account itself — only what we stored.
+            </p>
+            <p class="mt-2">
+                Prefer to ask us to do it for you instead? Email
+                <a href="mailto:salmanahmed382.jubair@gmail.com" class="text-primary underline">salmanahmed382.jubair@gmail.com</a>
+                from the address on your account and we'll delete it manually.
+            </p>
 
             <h2 class="mt-8 text-lg font-semibold">Contact</h2>
             <p class="mt-2">
