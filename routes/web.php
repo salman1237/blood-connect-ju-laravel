@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('landing');
 Route::view('/privacy', 'privacy')->name('privacy');
+Route::view('/account-deletion', 'account-deletion')->name('account-deletion');
 
 // Guest-reachable — the toggle lives in both the guest and app layouts.
 Route::post('/locale/{locale}', [LocaleController::class, 'update'])->name('locale.update');
