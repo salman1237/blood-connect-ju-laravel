@@ -47,7 +47,7 @@
 
             <h2 class="mt-8 text-lg font-semibold">Prefer we do it for you?</h2>
             <p class="mt-2">
-                Email <a href="mailto:salmanahmed382.jubair@gmail.com" class="text-primary underline">salmanahmed382.jubair@gmail.com</a>
+                Email <a href="mailto:support@bloodconnectju.org" class="text-primary underline">support@bloodconnectju.org</a>
                 from the address on your account and we'll delete it manually — useful if you've
                 lost access to your account and can't sign in to do it yourself.
             </p>
