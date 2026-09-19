@@ -34,6 +34,25 @@ class OnboardingTest extends TestCase
         $response->assertStatus(200);
     }
 
+    /**
+     * A user whose onboarding submission keeps failing (or who just wants to
+     * switch accounts) must still be able to sign out from this page — it's
+     * the only screen an incomplete profile can reach, so this is the only
+     * place they'd ever see a sign-out control.
+     */
+    public function test_can_sign_out_from_the_onboarding_page(): void
+    {
+        $user = User::factory()->create(['role' => 'student']);
+
+        $response = $this->actingAs($user)->get('/onboarding');
+
+        $response->assertOk();
+        $response->assertSee(route('logout'), false);
+
+        $this->actingAs($user)->post('/logout')->assertRedirect('/');
+        $this->assertGuest();
+    }
+
     public function test_student_must_provide_a_hall(): void
     {
         $user = User::factory()->create(['role' => 'student']);

@@ -172,6 +172,13 @@
                     <x-button type="submit" x-show="step === total" size="lg" class="flex-1">Finish setup</x-button>
                 </div>
             </form>
+
+            <form method="POST" action="{{ route('logout') }}" class="mt-4 text-center">
+                @csrf
+                <button type="submit" class="text-xs text-muted-foreground underline hover:text-foreground">
+                    Sign out
+                </button>
+            </form>
         </x-auth-card>
     </div>
 </x-guest-layout>
